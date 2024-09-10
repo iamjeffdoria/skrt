@@ -1,0 +1,184 @@
+{% extends 'webapp/base.html' %}
+
+{% block content %}
+
+<!-- Back button to dashboard -->
+<!-- <a href="{% url 'dashboard' %}" class="btn btn-outline-dark">
+    <i class="fa-solid fa-arrow-right fa-flip-horizontal fa-lg"></i>
+</a>  -->
+<br><br>
+<div class="card">
+    <h5 class="text-center">
+        <strong>
+            
+            &nbsp;
+            {{ record.first_name }}
+            {% if record.middle_name %}
+                {{ record.middle_name }}
+            {% endif %}
+            {{ record.last_name }}
+            {% if record.suffix %}
+                {{ record.suffix }}
+            {% endif %}
+        </strong>
+    </h5>
+    <hr>
+    <div class="form-check form-switch block-switch">
+        <button class="btn btn-outline-dark" type="button" id="blockDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 40px;">
+            <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+        </button>
+        <div class="dropdown-menu" aria-labelledby="blockDropdown">
+            {% if record.status == 'Active' %}
+            <a class="dropdown-item block-link" href="#" onclick="showBlockConfirmation('{{ record.id }}')" title="Block loss RFID Card."> <i class="fa fa-ban" aria-hidden="true"></i> &nbsp; Block</a>
+            {% endif %}
+            {% if record.status == 'Inactive' %}
+            <a class="dropdown-item unblock-link" href="#" onclick="updateStatus('{{ record.id }}', 'unblock')" title="Unblock Student."><ion-icon name="remove-circle-outline"></ion-icon> &nbsp; Unblock</a>
+            {% endif %}
+            <a class="dropdown-item" href="#"><ion-icon name="hourglass-outline"></ion-icon> &nbsp; Set expiration</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#"><ion-icon name="ellipsis-horizontal-outline"></ion-icon> &nbsp; Others...</a>
+        </div>
+    </div>
+
+    <br>
+
+    <!-- Centering container -->
+    <div class="center-container">
+        <div class="image-container">
+            <img src="{{ record.picture.url }}" alt="Student Picture" 
+                style="width: 100%; height: 100%; object-fit: cover;" 
+                title="Student Picture">
+        </div>
+
+        <div class="card-body">
+            <p><strong> Status: </strong> 
+                <span class="{% if record.status == 'Active' %}text-success{% else %}text-danger{% endif %}" style="text-align: left;">
+                    <strong>
+                        {{ record.status }}
+                    </strong>
+                </span>
+                </p>        
+            <p><strong> RFID Issue Date: </strong> {{ record.creation_date }}</p>
+            <p><strong> Student ID: </strong> {{ record.student_id }}</p>  
+            <p><strong> Email: </strong> {{ record.email }}</p>  
+            <p><strong> Course: </strong> {{ record.course }}</p>
+            <p><strong> Major: </strong> {{ record.major }}</p>
+            <p><strong> RFID Number: </strong> {{ record.rfid_number }}</p>
+        </div>
+    </div>
+</div>
+
+<br>
+
+<div class="buttons" id="actionButtons" style="display: none;">
+    <a href="{% url 'update-record' record.id %}" class="btn btn-info">
+        <i class="fa fa-pencil" aria-hidden="true"></i> &nbsp; Update
+    </a> &nbsp;
+    <a href="{% url 'student-logs' record.student_id %}" class="btn btn-success">
+        <i class="fa fa-eye" aria-hidden="true"></i>&nbsp; View Logs
+    </a> &nbsp;
+    <a href="#" class="btn btn-danger" onclick="showDeleteConfirmation('{{ record.id }}')">
+        <i class="fa fa-trash" aria-hidden="true"></i> &nbsp; Delete
+    </a>
+</div>
+
+<script>
+    // Update the student's status (block/unblock)
+    function updateStatus(studentId, action) {
+        const url = action === 'block' ? `/block-student/${studentId}/` : `/unblock-student/${studentId}/`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();  // Reload the page to see the updated status
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Show block confirmation using SweetAlert
+    function showBlockConfirmation(studentId) {
+        Swal.fire({
+            title: 'Confirm Block',
+            text: 'Are you sure you want to block this student?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Block',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus(studentId, 'block');
+            }
+        });
+    }
+     // Show delete confirmation using SweetAlert
+     function showDeleteConfirmation(recordId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteRecord(recordId);
+            }
+        });
+    }
+
+    // Perform the deletion if confirmed
+    function deleteRecord(recordId) {
+        fetch(`/delete-record/${recordId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                location.href = data.redirect_url;  // Redirect to the dashboard
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+
+    // Display action buttons if the student's status is 'Active'
+    document.addEventListener('DOMContentLoaded', function() {
+        const status = "{{ record.status }}";
+        if (status === 'Active') {
+            document.getElementById('actionButtons').style.display = 'block';
+        }
+    });
+</script>
+
+
+{% endblock %}

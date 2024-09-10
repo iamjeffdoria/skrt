@@ -1,0 +1,240 @@
+{% extends 'webapp/base.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+<nav class="navbar navbar-expand-lg bg-light" data-bs-theme="light" style="border: 1px solid #ccc; border-radius: 5px; background-color: rgb(63, 196, 196);">
+    <div class="container-fluid">
+      <a class="btn btn-primary btn-md create-rec" href="{% url 'create-record' %}">
+        <strong><i class="fa fa-user-plus" aria-hidden="true"></i> &nbsp; Add record</strong>
+      </a>
+      <div class="dropdown-container">
+        <select class="form-control me-2 custom-dropdown" name="entries" id="entries-filter" style="width: 150px; border: 1px solid black; border-radius: 5px; cursor: pointer;">
+            <option value="">Show Entries</option>
+            <option value="5" {% if request.GET.entries == '5' %}selected{% endif %}>5</option>
+            <option value="10" {% if request.GET.entries == '10' %}selected{% endif %}>10</option>
+            <option value="25" {% if request.GET.entries == '25' %}selected{% endif %}>25</option>
+            <option value="50" {% if request.GET.entries == '50' %}selected{% endif %}>50</option>
+        </select>
+        <i class="fa fa-chevron-down dropdown-arrow"></i>
+      </div>
+      
+      <div class="collapse navbar-collapse justify-content-center" id="navbarColor01">
+        <form class="d-flex align-items-center">
+          <div class="dropdown-container">
+            <select class="form-control me-2 custom-dropdown" name="course" id="course-filter" style="width: 200px; border: 1px solid black; border-radius: 5px; cursor: pointer;">
+              <option value="">Select Course</option>
+              {% for course in courses %}
+                <option value="{{ course }}" {% if request.GET.course == course %}selected{% endif %}>{{ course }}</option>
+              {% endfor %}
+            </select>
+            <i class="fa fa-chevron-down dropdown-arrow"></i>
+          </div>
+          
+          <div class="dropdown-container">
+            <select class="form-control me-2 custom-dropdown" name="major" id="major-filter" style="width: 200px; border: 1px solid black; border-radius: 5px; cursor: pointer;">
+              <option value="">Select Major</option>
+              {% for major in majors %}
+                {% if major != "" %}
+                  <option value="{{ major }}" {% if request.GET.major == major %}selected{% endif %}>{{ major }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+            <i class="fa fa-chevron-down dropdown-arrow"></i>
+          </div>
+
+          <button class="btn btn-primary btn-md me-2" type="submit" id="filter-button" style="height: calc(1.5em + 0.75rem + 2px); width: 100px; display: none;">
+            <i class="fa fa-search-plus" aria-hidden="true"></i>&nbsp; Filter
+          </button>
+        </form>
+      </div>
+
+      <form class="d-flex ms-auto" onsubmit="return false;">
+        <input id="search-input" class="form-control me-2" type="search" placeholder="Search here" value="{{ request.GET.q }}" style="width: 200px; border: 1px solid black; border-radius: 5px;">
+      </form>
+    </div>
+</nav>
+<hr>
+
+<div class="table-container">
+    <table class="table table-hover table-border " id="records-table">
+        <thead class="table-success">
+            <tr>
+                <th scope="col"><i class="fa fa-sort-numeric-asc" aria-hidden="true"></i></th>
+                <th scope="col"> Picture</th>
+                <th scope="col"> Student ID</th>
+                <th scope="col"> Full Name</th>
+                <th scope="col"> Course</th>
+                <th scope="col"> Major</th>
+                <th scope="col" class="text-center"> Action</th> <!-- Changed column header -->
+            </tr>
+        </thead>
+        <tbody>
+            {% if records %}
+                {% for record in records %}
+                    <tr>
+                        <td>{{ record.id }}</td>
+                        <td>
+                            {% if record.picture %}
+                                <img src="{{ record.picture.url }}" alt="Picture" style="width: 35px; height: 35px;">
+                            {% else %}
+                                No picture
+                            {% endif %}
+                        </td>
+                        <td>{{ record.student_id }}</td>
+                        <td>{{ record.first_name }} {% if record.middle_name %}{{ record.middle_name|slice:":1"}}. {% endif %}{{ record.last_name }} {% if record.suffix %}{{ record.suffix }} {% endif %}</td>
+                        <td>{{ record.course }}</td>
+                        <td>{{ record.major }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'student-logs' record.student_id %}" class="btn btn-info">View Logs</a>
+                            <a href="{% url 'record' record.id %}" class="btn btn-success">More</a>
+                        </td> <!-- Combined buttons into one column -->
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7">No records found</td> <!-- Adjusted colspan -->
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-container">
+    <ul class="pagination">
+        {% if records.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ records.previous_page_number }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        {% endif %}
+
+        {% for page_num in records.paginator.page_range %}
+            <li class="page-item {% if records.number == page_num %}active{% endif %}">
+                <a class="page-link" href="?page={{ page_num }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}">{{ page_num }}</a>
+            </li>
+        {% endfor %}
+
+        {% if records.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ records.next_page_number }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ records.paginator.num_pages }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}" aria-label="Last">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+
+<script>
+    document.getElementById('search-input').addEventListener('input', function(event) {
+        const query = this.value;
+        const course = document.getElementById('course-filter').value;
+        const major = document.getElementById('major-filter').value;
+        const entries = document.getElementById('entries-filter').value;
+
+        fetch(`/search/?q=${query}&course=${course}&major=${major}&entries=${entries}`)
+            .then(response => response.json())
+            .then(data => updateTable(data.results));
+    });
+
+    document.getElementById('search-input').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            triggerSearch();
+        }
+    });
+
+    document.getElementById('filter-button').addEventListener('click', function() {
+        triggerSearch();
+    });
+
+// Event listener for "Select Course" dropdown
+document.getElementById('course-filter').addEventListener('change', function() {
+    triggerSearch();
+});
+
+// Event listener for "Select Major" dropdown
+document.getElementById('major-filter').addEventListener('change', function() {
+    triggerSearch();
+});
+
+
+    function triggerSearch() {
+        const query = document.getElementById('search-input').value;
+        const course = document.getElementById('course-filter').value;
+        const major = document.getElementById('major-filter').value;
+        const entries = document.getElementById('entries-filter').value;
+
+        fetch(`/search/?q=${query}&course=${course}&major=${major}&entries=${entries}`)
+            .then(response => response.json())
+            .then(data => updateTable(data.results));
+    }
+
+    function updateTable(records) {
+        const recordsTableBody = document.querySelector('#records-table tbody');
+        recordsTableBody.innerHTML = '';
+
+        if (records.length === 0) {
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.innerHTML = '<td colspan="7">No records found</td>'; <!-- Adjusted colspan -->
+            recordsTableBody.appendChild(noResultsRow);
+            return;
+        }
+
+        records.forEach(record => {
+            const middleNameInitial = record.middle_name ? record.middle_name[0] + '.' : '';
+            const suffix = record.suffix ? ' ' + record.suffix : ''; // Check if suffix exists
+            const row = document.createElement('tr');
+
+            const pictureUrl = record.picture && record.picture.url ? record.picture.url : '';
+
+            row.innerHTML = `
+                <td>${record.id}</td>
+                <td>${pictureUrl ? `<img src="${pictureUrl}" alt="Picture" style="width: 35px; height: 35px;">` : 'No picture'}</td>
+                <td>${record.student_id}</td>
+                <td>${record.first_name} ${middleNameInitial} ${record.last_name}${suffix}</td>
+                <td>${record.course}</td>
+                <td>${record.major}</td>
+                <td class="text-center">
+                    <a href="/student-logs/${record.student_id}/" class="btn btn-info">View Logs</a>
+                    <a href="/record/${record.id}/" class="btn btn-success">More</a>
+                </td> <!-- Combined buttons into one column -->
+            `;
+            recordsTableBody.appendChild(row);
+        });
+    }
+
+    document.getElementById('entries-filter').addEventListener('change', function() {
+    triggerSearch();
+});
+
+function triggerSearch() {
+    const query = document.getElementById('search-input').value;
+    const course = document.getElementById('course-filter').value;
+    const major = document.getElementById('major-filter').value;
+    const entries = document.getElementById('entries-filter').value;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('q', query);
+    url.searchParams.set('course', course);
+    url.searchParams.set('major', major);
+    url.searchParams.set('entries', entries);
+
+    window.location.href = url.toString();
+}
+
+</script>
+
+{% endblock %}

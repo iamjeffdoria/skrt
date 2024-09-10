@@ -1,0 +1,305 @@
+body {
+    background-image: url('/static/img/dblue.jpg');
+    background-size: cover;
+    font-family: 'Poppins', serif;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    text-align: center;
+    margin: 20px 0; /* Increased margin for better spacing */
+}
+
+.school-name {
+    font-size: 3em; /* Increased font size */
+    font-weight: bold;
+    color: #ffffff;
+    margin: 0;
+}
+
+.school-address {
+    font-size: 2em; /* Increased font size */
+    color: #ffffff;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 90%;
+    max-width: 1800px; /* Adjusted maximum width */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Enhanced shadow for depth */
+    background: #0f1a3b;
+    padding: 15px; /* Increased padding */
+    margin: 20px auto; /* Center the container */
+    border-radius: 12px; /* Rounded corners */
+    border: 1px solid #444; /* Darker border color for a more modern look */
+}
+
+.profile-section {
+    width: 30%; /* Increased width for better proportion */
+    margin-right: 20px;
+    text-align: center;
+}
+
+.profile-picture {
+    width: 440px; /* Increased width */
+    height: 450px; /* Increased height */
+    border-radius: 12px; /* Slightly more rounded corners */
+    border: 3px solid #444; /* Darker border color */
+    background-color:transparent;
+    margin-bottom: 15px; /* Increased space below the picture */
+    
+}
+
+.profile-info h2 {
+    margin-top: 10px;
+    font-size: 24px;
+    color: #333;
+}
+
+.profile-details {
+    width: 65%;
+    padding: 20px; /* Increased padding */
+    background-color: #1a2a4c;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow for depth */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px; /* Increased bottom margin */
+}
+
+table td, table th {
+    padding: 12px; /* Increased padding */
+    border: 1px solid #555; /* Darker border color */
+    background-color: #1a2a4c;
+}
+
+table th {
+    background-color: #2a3d6b;
+    color: #ffffff;
+    text-align: left;
+    font-size: 1.3em; /* Increased font size */
+}
+
+
+h2 {
+    margin-bottom: 20px; /* Increased margin for better spacing */
+    text-align: center;
+    color: #ffffff;
+    font-size: 2em; /* Increased font size */
+}
+
+.profile-table th{
+    font-size: 1.3em;    
+}
+ .profile-table td {
+    font-size: 1.4em; /* Increased font size for consistency */
+}
+
+.school-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px; /* Increased padding */
+    background: rgba(0, 0, 0, 0.7); /* Darker semi-transparent background */
+}
+
+.school-logo {
+    width: 100px; /* Increased logo size */
+}
+
+.school-info {
+    text-align: center;
+    flex-grow: 1;
+    margin: 0 15px; /* Increased spacing */
+}
+
+.time-date {
+    font-size: 35px; /* Increased font size */
+    font-weight: bold;
+    color: #eae7f1;
+    text-align: center;
+    margin: 25px 0; /* Increased margin for better spacing */
+}
+
+@keyframes slide-right {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.rfid-error {
+    position: fixed;
+    top: 20px; /* Increased top margin */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #d9534f;
+    color: #ffffff;
+    padding: 15px; /* Increased padding */
+    border-radius: 8px; /* Slightly more rounded corners */
+    text-align: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.recent-logs {
+    margin-top: 20px; /* Increased top margin */
+    padding: 15px; /* Increased padding */
+    background-color: #1a2a4c;
+    border-radius: 12px; /* Increased border radius */
+    border: 1px solid #555; /* Darker border color */
+}
+
+.recent-logs h3 {
+    margin-bottom: 15px; /* Increased bottom margin */
+    font-size: 1.3em; /* Increased font size */
+}
+
+.mini-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.mini-table th{
+    padding: 10px; /* Increased padding */
+    border: 1px solid #555; /* Darker border color */
+    background-color: #1a2a4c;
+    color: #ffffff;
+    font-size: 1.2em; /* Increased font size */
+}
+ .mini-table td {
+    padding: 10px; /* Increased padding */
+    border: 1px solid #555; /* Darker border color */
+    background-color: #1a2a4c;
+    color: #ffffff;
+    font-size: 1.2em; /* Increased font size */
+}
+
+.mini-table th {
+    background-color: #2a3d6b;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+    .profile-section {
+        width: 40%; /* Adjust width for medium screens */
+    }
+
+    .profile-picture {
+        width: 350px; /* Adjust width */
+        height: 350px; /* Adjust height */
+    }
+
+    .profile-details {
+        width: 55%; /* Adjust width for medium screens */
+    }
+}
+
+@media (max-width: 992px) {
+    .container {
+        flex-direction: column; /* Stack elements vertically */
+        align-items: center; /* Center align items */
+    }
+
+    .profile-section {
+        width: 100%; /* Full width on smaller screens */
+        margin-right: 0; /* Remove margin */
+        margin-bottom: 20px; /* Add space below */
+    }
+
+    .profile-picture {
+        width: 100%; /* Full width on smaller screens */
+        height: auto; /* Maintain aspect ratio */
+    }
+
+    .profile-details {
+        width: 100%; /* Full width on smaller screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .school-name {
+        font-size: 2em; /* Decrease font size */
+    }
+
+    .school-address {
+        font-size: 1.2em; /* Decrease font size */
+    }
+
+    .school-logo {
+        width: 60px; /* Decrease logo size */
+    }
+
+    .time-date {
+        font-size: 28px; /* Decrease font size */
+    }
+
+    .profile-picture {
+        width: 250px; /* Decrease width */
+        height: 250px; /* Decrease height */
+    }
+}
+
+@media (max-width: 576px) {
+    .school-name {
+        font-size: 1.5em; /* Further decrease font size */
+    }
+
+    .school-address {
+        font-size: 1em; /* Further decrease font size */
+    }
+
+    .time-date {
+        font-size: 22px; /* Further decrease font size */
+    }
+
+    .profile-picture {
+        width: 200px; /* Further decrease width */
+        height: 200px; /* Further decrease height */
+    }
+
+    table td, table th {
+        font-size: 0.9em; /* Decrease font size */
+        padding: 8px; /* Decrease padding */
+    }
+
+    .mini-table th, .mini-table td {
+        font-size: 0.9em; /* Decrease font size */
+        padding: 8px; /* Decrease padding */
+    }
+}
+/* Additional Styles for Headings */
+.profile-details h3 {
+    color: #00FF00; /* Green color for "Current Student" */
+}
+
+.recent-logs h3 {
+    color: #c5f007; /* Green color for "Recent Students" */
+}
+
+.student-name , .student-course {
+    font-size: 1.5em; /* Adjust font size as needed */
+    color: #ffffff;   /* White color for text */
+    margin-top: 10px; /* Space between the picture and name */
+    font-weight: bold;
+}

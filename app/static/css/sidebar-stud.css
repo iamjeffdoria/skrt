@@ -1,0 +1,73 @@
+.navbar {
+    background: #000; /* Clean black background */
+    border-bottom: 2px solid #333; /* Subtle dark border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Soft shadow */
+    font-family: 'Poppins', sans-serif;
+}
+
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #fff; /* White text */
+}
+
+.navbar-brand .logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+}
+
+.navbar-toggler {
+    border: 1px solid #444; /* Dark gray border */
+}
+
+.navbar-toggler-icon {
+    background-image: linear-gradient(135deg, #444, #666); /* Subtle gradient for toggler */
+}
+
+.navbar-nav .nav-link {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    color: #ccc; /* Light gray text */
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #fff; /* White text on hover */
+    background-color: #333; /* Dark gray background on hover */
+}
+
+/* Logout button styling */
+.logout-btn {
+    display: flex;
+    align-items: center;
+    color: #ccc; /* Light gray text */
+}
+
+.logout-btn:hover {
+    color: #fff; /* White text on hover */
+}
+
+/* Loading animation (clean, without neon) */
+.loading-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    z-index: 9999; /* Ensure it appears above other content */
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #555; /* Dark gray border */
+    border-top: 4px solid transparent; /* Transparent top to create spinning effect */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

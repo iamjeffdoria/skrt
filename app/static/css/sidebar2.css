@@ -1,0 +1,180 @@
+/* Existing styles */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f6f9;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+#topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #131a31;
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.logo-container {
+    flex: 1;
+}
+
+.topbar-logo {
+    color: #FFF;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.topbar-nav {
+    flex: 3;
+    display: flex;
+    justify-content: flex-end;
+    font-family: 'Poppins', sans-serif;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1rem; /* Reduced gap between items */
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    color: #FFF;
+    font-size: 1rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 2px solid transparent; /* Default underline state */
+    transition: color 0.3s ease, border-color 0.3s ease; /* Smooth transition */
+}
+
+.nav-link.active {
+    color: #3b7ddd; /* Active color */
+    border-bottom: 2px solid #3b7ddd; /* Underline color */
+}
+
+.nav-link ion-icon {
+    margin-left: 0.5rem;
+}
+
+.nav-link:hover {
+    color: #3b7ddd;
+    border-bottom: 2px solid #3b7ddd; /* Underline color on hover */
+}
+
+/* Dropdown styling with curtain animation */
+.dropdown {
+    position: absolute;
+    left: -150px; /* Aligns dropdown with nav item */
+    top: 100%;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+    background-color: #0e2238;
+    list-style: none;
+    border-radius: 0.5rem;
+    padding: 0; /* Removed padding */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    width: 160px; /* Adjusted width */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dropdown-link {
+    display: block;
+    padding: 0.5rem 1rem; /* Reduced padding */
+    color: #FFF;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.dropdown-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Show dropdown with curtain animation on hover */
+.nav-item:hover .dropdown {
+    visibility: visible;
+    opacity: 1;
+    transform: scaleY(1); /* Curtain effect */
+}
+
+#toggle-btn {
+    background: transparent;
+    border: none;
+    color: #FFF;
+    font-size: 1.5rem;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #toggle-btn {
+        display: block;
+    }
+    
+    .topbar-nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background-color: #131a31;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+        padding: 0; /* Removed padding */
+    }
+    
+    .topbar-nav.active {
+        display: flex;
+        transform: translateY(0);
+    }
+    
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 0; /* Removed gap */
+    }
+    
+    .nav-link {
+        padding: 0.5rem 0; /* Adjusted padding */
+    }
+}
+
+/* General reset for text decoration */
+.nav-link, .topbar-logo, .dropdown-link {
+    text-decoration: none;
+}
+
+/* Remove underline on hover for nav-link, topbar-logo, and dropdown-link */
+.nav-link:hover, .topbar-logo:hover, .dropdown-link:hover {
+    text-decoration: none;
+}
+
+html {
+    scroll-behavior: smooth;
+}

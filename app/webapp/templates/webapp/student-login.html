@@ -1,0 +1,126 @@
+{% extends 'webapp/base.html' %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container bg-light shadow-md p-5 form-layout-login custom-bg mt-1">
+    <div style="text-align: center;">
+        <img src="{% static 'img/user-blue.png' %}" alt="User Icon" width="120" height="120">
+    </div>
+    <hr>
+    <h3 style="text-align: center; color: black;">Student Login</h3>
+    <hr>
+    <br>
+    <form method="POST" autocomplete="off" action="{% url 'stud-login' %}" onsubmit="showLoadingAnimation()">
+        {% csrf_token %}
+        <div style="max-width: 400px; margin: 0 auto;">
+            <div class="form-floating mb-3" style="margin-left: -10px; margin-right: 10px;">
+                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="Student ID" required>
+                <label for="student_id" style="padding-left: 20px;"><i class="fa fa-user-circle" aria-hidden="true"></i> &nbsp; Student ID</label>
+            </div>
+            <div class="form-floating mb-3" style="margin-left: -10px; margin-right: 10px;">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+                <label for="password" style="padding-left: 20px;"><i class="fa fa-lock" aria-hidden="true"></i> &nbsp; Password</label>
+            </div>
+            <button type="submit" id="loginButton" class="btn w-100 p-3" style="background-color: #122766; color: white; border-radius: 50px;">
+                <i class="fa fa-sign-in" aria-hidden="true"></i> &nbsp; Login
+            </button>
+        </div>
+    </form>
+    
+    {% if error %}
+        <br>
+        <p style="color: red; text-align: center;">{{ error }}</p>
+    {% endif %}
+    <br>
+    <p style="text-align: center;">
+        <a href="{% url 'student-register' %}" style="color: #122766; font-weight: bold;">Don't have an account? Register here</a>
+    </p>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="loading-spinner" style="display: none;">
+    <div class="spinner">
+        <div id="percentageText">0%</div>
+    </div>
+</div>
+
+<br>
+<style>
+    body {
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    .custom-bg {
+        background: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1050;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .spinner {
+        border: 10px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 10px solid #122766;
+        width: 80px;
+        height: 80px;
+        position: relative;
+        animation: spin 1s linear infinite;
+    }
+
+    #percentageText {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 14px;
+        color: #122766;
+        font-weight: bold;
+        text-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+    function showLoadingAnimation() {
+        var loginButton = document.getElementById('loginButton');
+        var loadingSpinner = document.getElementById('loadingSpinner');
+        var percentageText = document.getElementById('percentageText');
+
+        // Disable the login button and show the loading spinner
+        loginButton.disabled = true;
+        loginButton.innerHTML = 'Logging in...';
+        loadingSpinner.style.display = 'flex';
+
+        // Simulate loading progress (Replace this with actual progress update if needed)
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            percentageText.innerText = `${progress}%`;
+            if (progress >= 100) {
+                clearInterval(interval);
+            }
+        }, 100); // Update interval as needed
+    }
+</script>
+{% endblock %}

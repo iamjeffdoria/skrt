@@ -1,0 +1,122 @@
+{% extends 'webapp/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.min.css">
+<script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
+<style>
+    .hidden {
+        display: none;
+    }
+    .visible {
+        display: block;
+    }
+</style>
+
+
+<!-- <a href="{% url 'dashboard' %}" class="btn btn-outline-dark">
+    <i class="fa fa-arrow-left" aria-hidden="true"></i>
+</a> -->
+
+<div class="container bg-light shadow-md p-5 form-layout form-create">
+    <h3> <i class="fa fa-address-book" aria-hidden="true"></i> Add Record  </h3>
+  
+    <hr>
+
+    <form method="POST" enctype="multipart/form-data" autocomplete="off">
+        {% csrf_token %}
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <!-- Image Upload Frame with Default Styling -->
+                <div class="image-upload-frame" style="border: 2px dashed #ccc; padding: 10px; text-align: center; width: 180px; height: 180px;">
+                    <!-- Image Preview -->
+                    <img 
+                        id="image-preview" 
+                        alt="Image Preview" 
+                        style="width: 100%; height: 100%; object-fit: cover; display: none;" 
+                    />
+                    <p id="upload-guidance" style="margin-top: 50px; color: #aaa;">
+                        Upload 2x2 Image
+                    </p>
+                </div>
+
+                <!-- File Input for Picture -->
+                <label for="id_picture" class="btn btn-outline-primary" style="margin-top: 10px;">
+                    <i class="fa fa-camera" aria-hidden="true"></i> &nbsp; Upload Picture 
+                </label>
+                <input id="id_picture" type="file" name="picture" style="display: none;">
+                <br><br>
+                <!-- Form Fields with Icons in Labels -->
+                
+                <label for="id_rfid_number"><i class="fa fa-rss" aria-hidden="true"></i> RFID Number</label>
+                {{ form.rfid_number|as_crispy_field }}
+              
+                
+                <label for="id_first_name"><i class="fa fa-user" aria-hidden="true"></i> First Name</label>
+                {{ form.first_name|as_crispy_field }}
+
+                <label for="id_middle_name"><i class="fa fa-user" aria-hidden="true"></i> Middle Name</label>
+                {{ form.middle_name|as_crispy_field }}
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+
+               
+
+                <label for="id_last_name"><i class="fa fa-user" aria-hidden="true"></i> Last Name</label>
+                {{ form.last_name|as_crispy_field }}
+                
+                <label for="id_suffix"><i class="fa fa-user" aria-hidden="true"></i> Suffix</label>
+                {{ form.suffix|as_crispy_field }}
+
+                <label for="id_course"><i class="fa fa-graduation-cap" aria-hidden="true"></i> Course</label>
+                {{ form.course|as_crispy_field }}
+                
+                <label for="id_major"><i class="fa fa-cogs" aria-hidden="true"></i> Major</label>
+                {{ form.major|as_crispy_field }}
+                
+                <label for="id_student_id" ><i class="fa fa-id-card" aria-hidden="true"></i> Student ID</label>
+              
+                {{ form.student_id|as_crispy_field }}
+            </div>
+        </div>
+
+     
+
+        <!-- Submit Button with Font Awesome Icon -->
+        <button type="submit" class="btn btn-primary w-100 btn-block p-2">
+            <i class="fa fa-user-plus" aria-hidden="true"></i>&nbsp; Create record 
+        </button>
+    </form>
+</div>
+
+<!-- JavaScript to Display Image Preview -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var fileInput = document.getElementById("id_picture");
+        var previewImage = document.getElementById("image-preview");
+        var textGuidance = document.querySelector(".image-upload-frame p");
+
+        fileInput.addEventListener("change", function() {
+            var file = fileInput.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;  // Set the image source to the selected file
+                    previewImage.style.display = "block";  // Show the image preview
+                    textGuidance.style.display = "none";  // Hide text guidance
+                };
+                reader.readAsDataURL(file);  // Read the file to get its Data URL
+            } else {
+                previewImage.style.display = "none";  // Hide the preview if no file is selected
+                textGuidance.style.display = "block";  // Show text guidance
+            }
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Header for printing (Hidden by default) -->
+<div class="print-header d-print-block d-none">
+    <p>Republic of the Philippines</p>
+    <p>PALOMPON INSTITUTE OF TECHNOLOGY</p>
+    <p>Palompon, Leyte</p>
+    <p>COLLEGE OF TECHNOLOGY AND ENGINEERING</p>
+    <p>Information Technology Department</p>
+</div>
+
+<!-- Logo container for printing (Hidden by default) -->
+<div class="logo-container d-print-block d-none">
+    <div class="logo-left">
+        <img src="{% static 'img/pitLOGO.png' %}" alt="PIT Logo" class="logo-img">
+    </div>
+    <div class="logo-right">
+        <img src="{% static 'img/cote.png' %}" alt="COTE Logo" class="logo-img">
+    </div>
+</div>
+
+<!-- Student Information Section -->
+<div class="student-info d-flex justify-content-between align-items-center mb-3">
+    <div class="info-text">
+        <p><strong>Student ID:</strong> {{ student.student_id }}</p> 
+        <p><strong>Student Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+        <p><strong>Course:</strong> {{ student.course }}</p>
+    </div>
+    <!-- Print Report Button -->
+    <button class="btn btn-outline-dark btn-futuristic" onclick="window.print()">
+        <i class="fa fa-print" aria-hidden="true"></i> Print Report
+    </button>
+</div>
+
+<!-- Filter form -->
+<div class="text-center mb-3">
+    <form id="filter-form" method="get" class="d-inline-flex">
+        <div class="form-group mr-3">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+        </div>
+        <div class="form-group mr-3">
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+        </div>
+        <input type="hidden" name="entries" value="{{ request.GET.entries }}">
+    </form>
+</div>
+
+<!-- Entries dropdown form -->
+<form id="entries-form" method="get" class="d-inline-block">
+    <div class="form-group">
+        <label for="entries">Show:</label>
+        <select id="entries" name="entries" class="form-control" onchange="document.getElementById('entries-form').submit();">
+            <option value="">------</option>  <!-- Default option to show paginated records -->
+            <option value="5" {% if request.GET.entries == "5" %}selected{% endif %}>5</option>
+            <option value="10" {% if request.GET.entries == "10" %}selected{% endif %}>10</option>
+            <option value="25" {% if request.GET.entries == "25" %}selected{% endif %}>25</option>
+            <option value="50" {% if request.GET.entries == "50" %}selected{% endif %}>50</option>
+            <option value="all" {% if request.GET.entries == "all" %}selected{% endif %}>All</option>  <!-- Show all records -->
+        </select>
+        <input type="hidden" name="start_date" value="{{ request.GET.start_date }}">
+        <input type="hidden" name="end_date" value="{{ request.GET.end_date }}">
+    </div>
+</form>
+
+<!-- Display the logs in a table -->
+<div class="table-container">
+    <div class="table-scroll">
+        <table class="table table-hover table-border table-striped table-futuristic">
+            <thead class="thead-light">
+                <tr>
+                    <th>Type</th>  <!-- Login or Logout -->
+                    <th>Date</th>  <!-- Date of the log -->
+                    <th>Time</th>  <!-- Exact time of the log -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.type }}</td>
+                    <td>{{ log.time|date:"F d Y" }}</td>  <!-- Display date with month as word -->
+                    <td>{{ log.time|date:"h:i A" }}</td>  <!-- Display time in 12-hour format -->
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">No logs available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination controls -->
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page=1" class="btn btn-outline-dark">« First</a>
+            <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page={{ page_obj.previous_page_number }}" class="btn btn-outline-dark">Previous</a>
+        {% endif %}
+    </span>
+    <span class="page-numbers">
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="current btn btn-primary">{{ num }}</span>
+            {% else %}
+                <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page={{ num }}" class="btn btn-outline-dark">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+    </span>
+    <span class="step-links">
+        {% if page_obj.has_next %}
+            <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page={{ page_obj.next_page_number }}" class="btn btn-outline-dark">Next</a>
+            <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-dark">Last »</a>
+        {% endif %}
+    </span>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('filter-form');
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+
+        function updateFilter() {
+            form.submit();
+        }
+
+        startDateInput.addEventListener('change', updateFilter);
+        endDateInput.addEventListener('change', updateFilter);
+    });
+
+    function fetchFilteredLogsAndPrint() {
+        // Ensure the filter form is submitted with the correct dates before printing
+        const form = document.getElementById('filter-form');
+        form.submit();  // Submits the form to ensure filtered logs are shown
+
+        // Print after form submission (you may need a slight delay to ensure the content loads)
+        setTimeout(function() {
+            window.print();
+        }, 500);  // Adjust delay as needed based on load time
+    }
+
+    function changeTitleBeforePrint() {
+        document.title = ' '; // Empty title
+    }
+
+    function restoreTitleAfterPrint() {
+        document.title = 'Palompon Institute of Technology'; // Original title
+    }
+
+    window.onbeforeprint = changeTitleBeforePrint;
+    window.onafterprint = restoreTitleAfterPrint;
+</script>
+
+<style>
+    @media print {
+        /* Position header and logos */
+        .print-header {
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .logo-left img, .logo-right img {
+            position: absolute;
+            top: -200px;
+            width: 100px;  /* Adjust as needed */
+        }
+
+        .logo-left img {
+            left: 10%;
+        }
+
+        .logo-right img {
+            right: 10%;
+        }
+
+        /* Hide elements that should not be printed */
+        #sidebar, 
+        .topbar, 
+        .btn,
+        .pagination,
+        #filter-form,
+        #entries-form,
+        .show-entries,
+        .start-date,
+        .end-date,
+        header,
+        footer,
+        h5 {
+            display: none !important;
+        }
+    
+        .table-container {
+            margin: 0;
+            padding: 0;
+            overflow: visible !important;
+        }
+        .table tr {
+            page-break-inside: avoid;
+        }
+    
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+    
+        .table thead {
+            background-color: #f2f2f2;
+        }
+
+        body {
+            overflow: hidden;
+        }
+    }
+
+    /* Light Futuristic Styles */
+    .student-info {
+        background: linear-gradient(45deg, #f5f5f5, #e0e0e0);
+        border-radius: 10px;
+        padding: 15px;
+        color: #333;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .btn-futuristic {
+        background: linear-gradient(45deg, #ffffff, #f0f0f0);
+        border: 1px solid #ddd;
+        color: #333;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .btn-futuristic:hover {
+        background: linear-gradient(45deg, #f0f0f0, #ffffff);
+        box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+        color: blue;
+    }
+
+    .table-futuristic th, .table-futuristic td {
+        background-color: #ffffff;
+        color: #333;
+    }
+
+    .table-futuristic thead th {
+        background: linear-gradient(45deg, #f5f5f5, #e0e0e0);
+        color: #333;
+    }
+
+    .pagination a, .pagination .current {
+        background-color: #ffffff;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+
+    .pagination a:hover {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .pagination .current {
+        background-color: #e0e0e0;
+        color: #333;
+        border-color: #e0e0e0;
+    }
+</style>
+
+{% endblock %}

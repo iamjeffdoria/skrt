@@ -1,0 +1,219 @@
+{% extends 'webapp/base.html' %}
+
+{% block content %}
+<style>
+    /* Professional colorful theme */
+    body {
+        background-color: #f5f5f5;
+        color: #333;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .profile-pic {
+        width: 100px;
+        height: 100px;
+        border: 3px solid #4caf50;
+        padding: 5px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .profile-pic:hover {
+        border-color: #ff5722;
+        transform: scale(1.1);
+    }
+
+    .container {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .student-info {
+        color: #555;
+    }
+
+    .student-info p {
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .student-info i {
+        color: #4caf50;
+        margin-right: 10px;
+    }
+
+    .form-label, .form-control, .form-select {
+        color: #333;
+        background-color: #fafafa;
+        border: 1px solid #ccc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #4caf50;
+        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    }
+
+    .table {
+        color: #333;
+        border-color: #ccc;
+        background-color: #fff;
+    }
+
+    .table thead th {
+        background-color: #4caf50;
+        color: #fff;
+        border-bottom: 2px solid #ccc;
+        text-shadow: none;
+    }
+
+    .table-bordered {
+        border: 2px solid #4caf50;
+    }
+
+    .table-hover tbody tr {
+        background-color: #fff;
+        transition: background-color 0.3s ease;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f8e9;
+        border-color: #4caf50;
+    }
+
+    .table td {
+        background-color: #fafafa;
+        border: 1px solid #ccc;
+    }
+
+    .btn-outline-primary {
+        color: #4caf50;
+        border-color: #4caf50;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #4caf50;
+        color: #fff;
+    }
+
+    .pagination a {
+        color: #2196f3;
+        margin: 0 2px;
+    }
+
+    .pagination a:hover {
+        color: #ff5722;
+    }
+</style>
+
+<div class="text-center mb-4">
+    <a href="#">
+        {% if request.session.student_picture %}
+        <img src="{{ request.session.student_picture }}" alt="Profile Picture" class="profile-pic rounded-circle">
+        {% else %}
+        <ion-icon name="person-circle-outline" size="large" style="color: #333;"></ion-icon>
+        {% endif %}
+    </a>
+</div>
+
+<div class="container">
+    <div class="student-info mb-3">
+        <p><i class="fas fa-id-badge"></i><strong>Student ID:</strong> {{ student.student_id }}</p>
+        <p><i class="fas fa-sign-in-alt"></i><strong>Total Login:</strong> {{ total_login }}</p>
+        <p><i class="fas fa-sign-out-alt"></i><strong>Total Logout:</strong> {{ total_logout }}</p>
+    </div>
+
+    <!-- Filter form -->
+    <form id="filter-form" method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <label for="start_date" class="form-label">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+            </div>
+            <div class="col-md-6 mb-2">
+                <label for="end_date" class="form-label">End Date:</label>
+                <input type="date" id="end_date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+            </div>
+        </div>
+        <input type="hidden" name="entries" value="{{ request.GET.entries }}">
+    </form>
+
+    <!-- Entries dropdown form -->
+    <form id="entries-form" method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-6">
+                <label for="entries" class="form-label">Show:</label>
+                <select id="entries" name="entries" class="form-select" onchange="document.getElementById('entries-form').submit();">
+                    <option value="">-------</option>
+                    <option value="5" {% if request.GET.entries == "5" %}selected{% endif %}>5</option>
+                    <option value="10" {% if request.GET.entries == "10" %}selected{% endif %}>10</option>
+                    <option value="25" {% if request.GET.entries == "25" %}selected{% endif %}>25</option>
+                    <option value="50" {% if request.GET.entries == "50" %}selected{% endif %}>50</option>
+                </select>
+                <input type="hidden" name="start_date" value="{{ request.GET.start_date }}">
+                <input type="hidden" name="end_date" value="{{ request.GET.end_date }}">
+            </div>
+        </div>
+    </form>
+
+    <!-- Display the logs in a table -->
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.type }}</td>
+                    <td>{{ log.time|date:"F d, Y" }}</td>
+                    <td>{{ log.time|date:"h:i A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">No logs available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination controls -->
+    <div class="d-flex justify-content-between my-3">
+        <div>
+            {% if page_obj.has_previous %}
+                <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page=1" class="btn btn-outline-primary">&laquo; First</a>
+                <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+            {% endif %}
+        </div>
+        <div>
+            {% if page_obj.has_next %}
+                <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                <a href="?{% if request.GET.start_date %}start_date={{ request.GET.start_date }}&{% endif %}{% if request.GET.end_date %}end_date={{ request.GET.end_date }}&{% endif %}entries={{ request.GET.entries }}&page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('filter-form');
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+
+        function updateFilter() {   
+            form.submit();
+        }
+
+        startDateInput.addEventListener('change', updateFilter);
+        endDateInput.addEventListener('change', updateFilter);
+    });
+</script>
+
+{% endblock %}

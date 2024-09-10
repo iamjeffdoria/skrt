@@ -1,0 +1,119 @@
+{% load static %}
+{% block content %}
+<!-- Include Google Fonts -->
+<link rel="icon" href="{% static 'img/pitLOGO.png' %}">
+<link rel="stylesheet" href="{% static 'css/prompt.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/> 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+<script type="module" src="https://unpkg.com/ionicons@7.1.1/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule="" src="https://unpkg.com/ionicons@7.1.1/dist/ionicons/ionicons.js"></script>
+
+<div class="school-header">
+    <div id="rfid-error" class="rfid-error hidden">Unregistered card. Please try again.</div>
+    
+    <img src="{% static 'img/pitLOGO.png' %}" alt="School Logo" class="school-logo">
+    
+    <div class="school-info">
+        <div class="school-name">PALOMPON INSTITUTE OF TECHNOLOGY</div>
+        <div class="school-address">Evangelista Street, 6538 Palompon Leyte Philippines</div>
+    </div>
+
+    <img src="{% static 'img/newcote.png' %}" alt="Other Logo" class="school-logo">
+</div>
+
+<input type="text" id="rfid_input" style="position: absolute; left: -9999px;" autocomplete="off" />
+
+<div class="container">
+    <div id="rfid-error" class="rfid-error hidden">Unregistered card.</div>
+    
+    <div class="profile-section">
+        <div class="profile-picture">
+            {% if picture_url %}
+                <img src="{{ picture_url }}" alt="Profile Picture" class="profile-picture">
+            {% else %}
+                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Default Profile Picture" class="profile-picture">
+            {% endif %}
+        </div>
+        <!-- Added name tag below the profile picture -->
+        <div id="student-info" class="student-info">
+            <div id="student-name" class="student-name">-----</div>
+            <p id="student-course" class="student-course">-------</p>
+        </div>
+       
+    </div>
+    
+    <div class="profile-details">
+       
+        <table class="profile-table">
+            <tbody>
+                <!-- Table structure with smaller keys and larger values -->
+                <tr>
+                    <th colspan="3"> <i class="fa fa-id-card" aria-hidden="true"></i> &nbsp; STUDENT ID </th>
+                </tr>
+                <tr>
+                    <td colspan="3">-----</td>
+                </tr>
+                
+                <tr>
+                    <th colspan="3"><i class="fa fa-users" aria-hidden="true"></i> &nbsp; NAME </th>
+                </tr>
+                <tr>
+                    <td colspan="3">-----</td>
+                </tr>
+                
+                <tr>
+                    <th> <ion-icon name="alarm-sharp"></ion-icon> &nbsp; TIME </th> 
+                    <th><ion-icon name="keypad-sharp"></ion-icon> &nbsp; TYPE </th> 
+                    <th> <ion-icon name="calendar-sharp"></ion-icon> &nbsp; DATE </th> 
+                </tr>
+                <tr>
+                    <td>-----</td>
+                    <td>-----</td>      
+                    <td>-----</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <!-- Mini Data Table for Recent Logs -->
+        <div class="recent-logs">
+            <h3>Recent Students</h3>
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>DATE AND TIME</th>
+                        <th>NAME</th>
+                        <th>LOG TYPE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td>{{ log.time|date:"H:i" }}</td>
+                        <td>{{ log.student.first_name }} {{ log.student.middle_name|default_if_none:'' }} {{ log.student.last_name }}</td>
+                        <td>{{ log.type|capfirst }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        
+    </div>
+</div>
+
+<div class="real-time-info time-date">
+    <strong id="current-time">Current Time: --:--:--</strong>
+    &nbsp; &nbsp;
+    <strong id="current-date">Current Date: YYYY-MM-DD</strong>
+</div>
+
+<!-- JavaScript resources -->
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="{% static 'js/app.js'%}"></script>
+
+
+{% endblock %}
+

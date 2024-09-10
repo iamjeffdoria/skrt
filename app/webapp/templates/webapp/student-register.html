@@ -1,0 +1,173 @@
+{% extends 'webapp/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.min.css">
+<script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
+<style>
+    .hidden {
+        display: none;
+    }
+    .visible {
+        display: block;
+    }
+    .form-layout {
+        background-color: #ffffff; /* White background */
+        color: #343a40; /* Dark gray text */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Lighter shadow for a soft effect */
+    }
+    .image-upload-frame {
+        border: 2px dashed #adb5bd; /* Light gray border */
+        padding: 10px;
+        text-align: center;
+        width: 180px;
+        height: 180px;
+        margin-bottom: 20px;
+        background-color: #f8f9fa; /* Very light gray background */
+        color: #6c757d; /* Slightly darker gray text */
+    }
+    .image-upload-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+    }
+    .image-upload-frame p {
+        margin-top: 50px;
+        color: #6c757d; /* Slightly darker gray text */
+    }
+    .btn-outline-primary {
+        margin-top: 10px;
+        border-color: #007bff; /* Blue border */
+        color: white; /* Blue text */
+    }
+    .btn-outline-primary:hover {
+        background-color: white; /* Blue background on hover */
+        color: #007bff; /* White text on hover */
+    }
+    .btn-primary {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff; /* Primary blue color */
+        border: none;
+        color: #ffffff; /* White text */
+    }
+    .btn-primary:hover {
+        background-color: #0056b3; /* Darker blue on hover */
+    }
+    .login-link {
+        display: block;
+        margin-top: 15px;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+    .login-link a {
+        color: #007bff; /* Primary blue color */
+        text-decoration: none;
+    }
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="container bg-light shadow-md p-5 form-layout form-create">
+    <h3><i class="fa fa-address-book" aria-hidden="true"></i> Student Registration</h3>
+    <hr>
+
+    <form method="POST" enctype="multipart/form-data" autocomplete="off">
+        {% csrf_token %}
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <!-- Image Upload Frame -->
+                <div class="image-upload-frame">
+                    <img id="image-preview" alt="Image Preview" />
+                    <p id="upload-guidance">Upload 2x2 Image</p>
+                </div>
+
+                <!-- File Input for Picture -->
+                <label for="id_picture" class="btn btn-outline-primary" style="background-color: #303c66;">
+                    <i class="fa fa-camera" aria-hidden="true"></i> &nbsp; Upload Picture
+                </label>
+                <input id="id_picture" type="file" name="picture" class="hidden">
+
+                <br><br>
+                
+                <label for="id_first_name"><i class="fa fa-user" aria-hidden="true"></i> First Name</label>
+                {{ form.first_name|as_crispy_field }}
+
+                <label for="id_middle_name"><i class="fa fa-user" aria-hidden="true"></i> Middle Name</label>
+                {{ form.middle_name|as_crispy_field }}
+
+                <label for="id_last_name"><i class="fa fa-user" aria-hidden="true"></i> Last Name</label>
+                {{ form.last_name|as_crispy_field }}
+                
+                <label for="id_suffix"><i class="fa fa-user" aria-hidden="true"></i> Suffix</label>
+                {{ form.suffix|as_crispy_field }}
+
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+              
+                <label for="id_course"><i class="fa fa-graduation-cap" aria-hidden="true"></i> Course</label>
+                {{ form.course|as_crispy_field }}
+                
+                <label for="id_major"><i class="fa fa-cogs" aria-hidden="true"></i> Major</label>
+                {{ form.major|as_crispy_field }}
+                
+                <label for="id_student_id"><i class="fa fa-id-card" aria-hidden="true"></i> Student ID</label>
+                {{ form.student_id|as_crispy_field }}
+
+                <!-- Email Field -->
+                <label for="id_email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</label>
+                {{ form.email|as_crispy_field }}
+
+                <!-- Password Field -->
+                <label for="id_password"><i class="fa fa-lock" aria-hidden="true"></i> Password</label>
+                {{ form.password|as_crispy_field }}
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary" style="background-color: #303c66;">
+            <i class="fa fa-paper-plane" aria-hidden="true"></i>&nbsp; Submit
+        </button>
+        
+        <!-- Login Link -->
+        <div class="login-link">
+            <p>Already have an account? <a href="{% url 'stud-login' %}">Login</a></p>
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript for Image Preview -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var fileInput = document.getElementById("id_picture");
+        var previewImage = document.getElementById("image-preview");
+        var textGuidance = document.getElementById("upload-guidance");
+
+        fileInput.addEventListener("change", function() {
+            var file = fileInput.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = "block";
+                    textGuidance.style.display = "none";
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.style.display = "none";
+                textGuidance.style.display = "block";
+            }
+        });
+    });
+</script>
+
+{% endblock %}

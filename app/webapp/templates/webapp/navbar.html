@@ -1,0 +1,686 @@
+
+{% load static %}
+  
+
+  {% if user.is_authenticated %}
+  <!DOCTYPE html>
+  <html lang="en">  
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     
+  
+      <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+      
+  </head>
+  <body>
+  
+
+    <!-- Notification Bar -->
+    <div id="notification-bar" class="notification-bar">
+        <div class="notification-header">
+            <h4><i class="fa fa-bell"></i> Notifications</h4>
+            <span class="close-notification-bar">&times;</span>
+        </div>
+        <div class="notification-content">
+            <p>No new notifications</p>
+            
+        </div>
+    </div>
+   <!-- Loading Spinner -->
+<div class="spinner-overlay">
+    <div class="spinner"></div>
+</div>
+    
+      <div class="wrapper">
+        <header class="topbar">
+            <div class="topbar-content">
+                <div class="logo"> <img src="{% static 'img/pitLOGO.png' %}" style="width: 40px; height: 40px;">&nbsp; GATEPASS</div>
+                <div class="topbar-right">
+                    
+                    <div id="date-time" class="date-time"></div>
+                    <div style="display: flex; align-items: center;">
+        <!-- Notification Bell -->
+        <div class="notification-bell">
+            <i class="fa fa-bell"></i>
+            <span class="notification-count">3</span>
+        </div>
+                    
+                    <div class="dropdown">
+                        <a href="#" class="profile-link dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if request.user.userprofile.picture %}
+                                <img src="{{ request.user.userprofile.picture.url }}" alt="Profile Picture" class="profile-picture">
+                            {% else %}
+                                <ion-icon name="person-circle-outline"></ion-icon>
+                            {% endif %}
+                           
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="prof
+                        ileDropdown">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editProfileModal"><i class="fa fa-pencil" aria-hidden="true"></i> &nbsp; Edit Profile</a></li>
+
+                            <li><a class="dropdown-item" href="{% url 'logout' %}" id="logout-btn"><i class="fa fa-sign-out" aria-hidden="true"></i> &nbsp; Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+            </div>
+        </header>
+        
+        
+
+          <aside id="sidebar" class="expand">
+              <div class="d-flex">
+                  <button id="toggle-btn" type="button">
+                    <ion-icon name="grid-outline"></ion-icon>
+                  </button>
+                  <div class="sidebar-logo" style="color: white;"> 
+                     Welcome {{user.last_name}}
+                  </div>
+              </div>
+              <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="{% url 'dashboard-real'%}" class="sidebar-link">
+                        <ion-icon name="menu-outline"></ion-icon>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'all-logs'%}" class="sidebar-link">
+                        <ion-icon name="eye-outline"></ion-icon>
+                        <span>View All Logs</span>
+                    </a>
+                </li>
+              
+                <li class="sidebar-item">
+                    <a href="{% url 'dashboard' %}" class="sidebar-link">
+                        <ion-icon name="book-outline"></ion-icon>
+                        <span>Student List</span>
+                    </a>
+                </li>
+              
+                <!-- <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        <ion-icon name="person-add-outline"></ion-icon>
+                        <span>Employee List</span>
+                    </a>
+                </li> -->
+		    <li class="sidebar-item">
+                    <a href="{% url 'admin-record' %}" class="sidebar-link">
+                        <ion-icon name="people-outline"></ion-icon>
+                        <span>OSDS Clerk</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'student-request' %}" class="sidebar-link">
+                        <ion-icon name="stopwatch-outline"></ion-icon>
+                        <span>Pending Registrations</span>
+                    </a>
+                </li>
+    	
+		  
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link has-dropdown collapsed no-loading" data-bs-toggle="collapse" 
+                    data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
+                        <ion-icon name="caret-down-outline"></ion-icon>
+                        <span>More Items</span>
+                    </a>
+                    <ul id="auth" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{% url 'prompt' %}" class="sidebar-link no-loading" target="_blank">
+                                &nbsp;&nbsp;&nbsp; <i class="fa fa-desktop" aria-hidden="true"></i> &nbsp; Display Student
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{% url 'student-reports' %}" class="sidebar-link student-reports">
+                                &nbsp; &nbsp;&nbsp;&nbsp;<i class="fa fa-bell" aria-hidden="true"></i> &nbsp;   
+                                Student Reports
+                            </a> 
+                        </li>
+                      
+                    </ul>
+                </li>
+                 
+              </ul>
+          </aside>
+          <!-- Edit Profile Modal -->
+ 
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg"> <!-- Set modal width to large -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="editProfileModalLabel"><strong>Edit Profile</strong></h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" method="post" enctype="multipart/form-data" action="{% url 'update-profile' %}">
+                    {% csrf_token %}
+                    <div class="row">
+                        <!-- Column 1 -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="profile_picture" class="form-label"><strong><i class="fa fa-camera" aria-hidden="true"></i>&nbsp;Profile Picture:</strong></label>
+                                <!-- Image preview -->
+                                <div class="image-preview-container text-center mb-3">
+                                    <img id="profile-picture-preview" 
+                                         src="{% if user.userprofile.picture %}{{ user.userprofile.picture.url }}{% else %}{% static 'default-profile-picture.jpg' %}{% endif %}" 
+                                         alt="Profile Picture" 
+                                         class="img-fluid rounded-circle border" style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <input type="file" class="form-control custom-input" id="picture" name="picture">
+                            </div>
+                            <div class="mb-3">
+                                <label for="username" class="form-label"><strong><i class="fa fa-user" aria-hidden="true"></i> &nbsp; Username:</strong></label>
+                                <input type="text" class="form-control custom-input" id="username" name="username" value="{{ user.username }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label"><strong><i class="fa fa-user" aria-hidden="true"></i> &nbsp;First Name:</strong></label>
+                                <input type="text" class="form-control custom-input" id="first_name" name="first_name" value="{{ user.first_name }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label"><strong><i class="fa fa-envelope" aria-hidden="true"></i> &nbsp;Email:</strong></label>
+                                <input type="email" class="form-control custom-input" id="email" name="email" value="{{ user.email }}">
+                            </div>
+                        </div>
+                        <!-- Column 2 -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label"><strong><i class="fa fa-user" aria-hidden="true"></i> &nbsp;Last Name:</strong></label>
+                                <input type="text" class="form-control custom-input" id="last_name" name="last_name" value="{{ user.last_name }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label"><strong><i class="fa fa-key" aria-hidden="true"></i>&nbsp; New Password:</strong></label>
+                                <input type="password" class="form-control custom-input" id="new_password" name="new_password">
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label"><strong><i class="fa fa-lock" aria-hidden="true"></i>&nbsp;Confirm Password:</strong></label>
+                                <input type="password" class="form-control custom-input" id="confirm_password" name="confirm_password">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger custom-btn" data-bs-dismiss="modal"><strong>Cancel</strong></button>
+                <button type="submit" form="editProfileForm" class="btn btn-primary custom-btn"><strong>Save changes</strong></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+        
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    
+      <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+      <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    
+      <script>
+             document.addEventListener('DOMContentLoaded', function() {
+        const editProfileForm = document.getElementById('editProfileForm');
+        const saveChangesButton = document.querySelector('#editProfileModal .btn-primary');
+
+        // Function to validate the form
+        function validateForm() {
+            const newPassword = document.getElementById('new_password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+
+            if (newPassword && newPassword !== confirmPassword) {
+                Swal.fire({
+                    title: 'Passwords do not match!',
+                    text: 'Please make sure your new password and confirm password fields match.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return false; // Prevent form submission
+            }
+            return true; // Allow form submission
+        }
+
+        // Handle the form submit event
+        editProfileForm.addEventListener('submit', function(event) {
+            if (!validateForm()) {
+                event.preventDefault(); // Prevent form submission
+                return false;
+            }
+        });
+
+        // Handle the save changes button click event
+        saveChangesButton.addEventListener('click', function(event) {
+            if (!validateForm()) {
+                event.preventDefault(); // Prevent modal from closing
+                return false;
+            }
+        });
+    });
+
+        document.getElementById('logout-btn').addEventListener('click', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Are you sure you want to logout?',
+                text: "You will be redirected to the login page.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, logout!',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'custom-swal',
+                    title: 'custom-swal-title',
+                    content: 'custom-swal-content',
+                    actions: 'custom-swal-actions',
+                    confirmButton: 'custom-swal-confirm',
+                    cancelButton: 'custom-swal-cancel'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{% url 'logout' %}";
+                }
+            });
+        });
+
+      
+    </script>
+    <style>
+
+        /* Custom styles for SweetAlert2 */
+        .custom-swal {
+            background-color: rgb(255, 255, 255);
+            color: black;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 16px;
+        }
+        .custom-swal-title {
+            color: black;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .custom-swal-content {
+            color: #ccc;
+        }
+        .custom-swal-actions {
+            margin-top: 20px;
+        }
+        .custom-swal-confirm {
+            background-color: #3085d6 !important;
+            border-radius: 5px;
+            padding: 10px 20px;
+        }
+        .custom-swal-cancel {
+            background-color: #d33 !important;
+            border-radius: 5px;
+            padding: 10px 20px;
+        }
+    </style>
+    
+      <script src="{% static 'js/sidebar.js' %}"></script>
+  </body>
+  </html>
+
+  {% elif request.session.user_type == 'student' %}
+
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="{% static 'css/sidebar-stud.css' %}">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  </head>
+  <body>
+      <div class="loading-container" id="loadingAnimation">
+          <div class="loading-spinner"></div>
+      </div>
+      <header class="navbar navbar-expand-lg navbar-dark">
+          <div class="container-fluid">
+              <a class="navbar-brand d-flex align-items-center" href="#">
+                  <img src="{% static 'img/pitLOGO.png' %}" alt="Logo" class="logo">
+                  <span>GATEPASS</span>
+              </a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarNav">
+                  <ul class="navbar-nav ms-auto">
+                      <li class="nav-item">
+                          <a class="nav-link" href="{% url 'stud-dash' %}" data-loading="true">Dashboard</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link" href="{% url 'create-report' %}" data-loading="true">Create Report</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link" href="{% url 'own-logs' %}" data-loading="true">Your Logs</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link d-flex align-items-center logout-btn" href="{% url 'stud-logout' %}">
+                              <span>Logout</span>
+                          </a>
+                      </li>
+                  </ul>
+              </div>
+          </div>
+      </header>
+  
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+      <script>
+          document.addEventListener('DOMContentLoaded', function() {
+              const loadingAnimation = document.getElementById('loadingAnimation');
+              const navLinks = document.querySelectorAll('.navbar-nav .nav-link[data-loading="true"]');
+  
+              navLinks.forEach(link => {
+                  link.addEventListener('click', function() {
+                      loadingAnimation.style.display = 'flex';
+                      // Optional: Simulate delay before redirecting
+                      setTimeout(() => window.location.href = this.href, 500); // Adjust delay as needed
+                  });
+              });
+  
+              document.querySelector('.logout-btn').addEventListener('click', function(event) {
+                  event.preventDefault();
+                  Swal.fire({
+                      title: 'Are you sure you want to logout?',
+                      text: "You will be redirected to the login page.",
+                      icon: 'warning',
+                      showCancelButton: true,
+                      confirmButtonColor: '#3085d6',
+                      cancelButtonColor: '#d33',
+                      confirmButtonText: 'Yes, logout!',
+                      cancelButtonText: 'Cancel'
+                  }).then((result) => {
+                      if (result.isConfirmed) {
+                          window.location.href = this.href;
+                      }
+                  });
+              });
+          });
+      </script>
+  </body>
+  </html>
+  
+        {% else %}
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="{% static 'css/sidebar2.css' %}">
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            <title>PIT Gatepass</title>
+            <style>
+                /* Existing styles */
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+        
+                body {
+                    font-family: 'Poppins', sans-serif;
+                    background-color: #f4f6f9;
+                    display: flex;
+                    flex-direction: column;
+                    height: 100vh;
+                }
+        
+                #topbar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background-color: #131a31;
+                    padding: 1rem 2rem;
+                    position: sticky;
+                    top: 0;
+                    z-index: 1000;
+                    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+                    width: 100%;
+                }
+        
+                .logo-container {
+                    flex: 1;
+                }
+        
+                .topbar-logo {
+                    color: #FFF;
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    text-decoration: none;
+                }
+        
+                .topbar-nav {
+                    flex: 3;
+                    display: flex;
+                    justify-content: flex-end;
+                    font-family: 'Poppins', sans-serif;
+                }
+        
+                .nav-links {
+                    list-style: none;
+                    display: flex;
+                    gap: 2rem;
+                }
+        
+                .nav-item {
+                    position: relative;
+                }
+        
+                .nav-link {
+                    color: #FFF;
+                    font-size: 1rem;
+                    text-decoration: none;
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                }
+        
+                .nav-link ion-icon {
+                    margin-left: 0.5rem;
+                }
+        
+                .nav-link:hover {
+                    color: #3b7ddd;
+                }
+        
+                /* Dropdown styling with curtain animation */
+                .dropdown {
+                    position: absolute;
+                    left: -150px; /* Aligns dropdown with nav item */
+                    top: 100%;
+                    display: block;
+                    visibility: hidden;
+                    opacity: 0;
+                    transform: scaleY(0);
+                    transform-origin: top;
+                    background-color: #0e2238;
+                    list-style: none;
+                    border-radius: 0.5rem;
+                    padding: 0.5rem 0;
+                    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+                    z-index: 999;
+                    width: 200px;
+                    transition: opacity 0.3s ease, transform 0.3s ease;
+                }
+        
+                .dropdown.show {
+                    visibility: visible;
+                    opacity: 1;
+                    transform: scaleY(1);
+                }
+        
+                .dropdown-link {
+                    display: block;
+                    padding: 0.75rem 1.5rem;
+                    color: #FFF;
+                    text-decoration: none;
+                    font-size: 0.9rem;
+                }
+        
+                .dropdown-link:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    color: white;
+                }
+        
+                /* Show dropdown with curtain animation on hover */
+                .nav-item:hover .dropdown {
+                    visibility: visible;
+                    opacity: 1;
+                    transform: scaleY(1); /* Curtain effect */
+                }
+        
+                #toggle-btn {
+                    background: transparent;
+                    border: none;
+                    color: #FFF;
+                    font-size: 1.5rem;
+                    display: none;
+                }
+        
+                @media (max-width: 768px) {
+                    #toggle-btn {
+                        display: block;
+                    }
+                    
+                    .topbar-nav {
+                        display: none;
+                        flex-direction: column;
+                        width: 100%;
+                        background-color: #131a31;
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        transform: translateY(-100%);
+                        transition: transform 0.3s ease;
+                    }
+                    
+                    .topbar-nav.active {
+                        display: flex;
+                        transform: translateY(0);
+                    }
+                    
+                    .nav-links {
+                        flex-direction: column;
+                        align-items: center;
+                        width: 100%;
+                    }
+                    
+                    .nav-link {
+                        padding: 1rem 0;
+                    }
+                }
+        
+                /* General reset for text decoration */
+                .nav-link, .topbar-logo, .dropdown-link {
+                    text-decoration: none;
+                }
+        
+                /* Remove underline on hover for nav-link, topbar-logo, and dropdown-link */
+                .nav-link:hover, .topbar-logo:hover, .dropdown-link:hover {
+                    text-decoration: none;
+                }
+        
+                /* Existing nav-link hover styling */
+                .nav-link:hover {
+                    color: #3b7ddd;
+                }
+        
+                /* Existing dropdown-link hover styling */
+                .dropdown-link:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    color: white;
+                }
+        
+                html {
+                    scroll-behavior: smooth;
+                }
+            </style>
+        </head>
+        <body>
+            <header id="topbar">
+                <div class="logo-container">
+                    <a href="{% url 'index' %}" class="topbar-logo">PIT Gatepass</a>
+                </div>
+                <nav class="topbar-nav">
+                    <ul class="nav-links">
+                        {% if request.resolver_match.url_name == 'index' %}
+                        <li class="nav-item">
+                            <a href="#home" class="nav-link active" id="home-link">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#about" class="nav-link" id="about-link">About Us</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" id="auth-dropdown">Auth
+                                <ion-icon name="chevron-down-outline"></ion-icon>
+                            </a>
+                            <ul class="dropdown">
+                                <li><a href="{% url 'login' %}" class="dropdown-link">OSDS Login</a></li>
+                                <li><a href="#" class="dropdown-link">Head of Security Login</a></li>
+                                <li><a href="{% url 'stud-login' %}" class="dropdown-link">Students Login</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+                <button id="toggle-btn">
+                    <ion-icon name="menu-outline"></ion-icon>
+                </button>
+            </header>
+            
+            <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+            <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+            
+            <script>
+                // JavaScript for navigation interaction
+                const navLinks = document.querySelectorAll('.nav-link');
+                const dropdown = document.querySelector('.dropdown');
+                const authDropdown = document.getElementById('auth-dropdown');
+        
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        // Remove 'active' class from all links
+                        navLinks.forEach(nav => nav.classList.remove('active'));
+                        // Add 'active' class to clicked link
+                        link.classList.add('active');
+                    });
+                });
+        
+                // JavaScript for toggle button
+                const toggleBtn = document.getElementById('toggle-btn');
+                const topbarNav = document.querySelector('.topbar-nav');
+        
+                toggleBtn.addEventListener('click', () => {
+                    topbarNav.classList.toggle('active');
+                });
+        
+                // JavaScript for dropdown
+                authDropdown.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    dropdown.classList.toggle('show');
+                });
+        
+                // Hide dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!authDropdown.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+            </script>
+        </body>
+        </html>
+        
+        
+        {% endif %}
+        
+
+</body>
+</html>

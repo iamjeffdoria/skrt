@@ -1,0 +1,99 @@
+{% extends 'webapp/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="container mt-1">
+    <div class="panel" style="background-color: #f5f5f5; border-radius: 8px; padding: 20px;">
+        <h3 class="font-weight-bold">Reports Made by Students</h3>
+
+        <div class="row mb-2">
+            <!-- Search Bar -->
+            <div class="col-md-6">
+                <input type="text" id="search-input" class="form-control" placeholder="Search reports...">
+            </div>
+
+            <!-- Show Entries Dropdown -->
+            <div class="col-md-6 text-end">
+                <label for="entries-select" class="me-2">Show:</label>
+                <select id="entries-select" class="form-select w-auto d-inline">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Student ID</th>
+                        <th scope="col">Report Content</th>
+                        <th scope="col">Date of RFID Loss</th>
+                        <th scope="col">Date Submitted</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                    {% for report in reports %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ report.student_id }}</td>
+                        <td class="truncate">{{ report.report_content }}</td>
+                        <td>{{ report.rfid_loss_date }}</td>
+                        <td>{{ report.date_submitted }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger">Delete</button>
+                            <button class="btn btn-sm btn-info">Full Details</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No reports available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="row">
+            <div class="col">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if not reports.has_previous %}disabled{% endif %}">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item {% if not reports.has_previous %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ reports.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% for num in reports.paginator.page_range %}
+                        <li class="page-item {% if reports.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+                        <li class="page-item {% if not reports.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ reports.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item {% if not reports.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ reports.paginator.num_pages }}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

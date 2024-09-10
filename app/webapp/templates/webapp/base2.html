@@ -1,0 +1,72 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Palompon Institute of Technology</title>
+    <link rel="icon" href="{% static 'img/pitLOGO.png' %}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles2.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/> 
+    <!-- Styles for Toastify (if you need additional notifications) -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    
+    
+</head>
+<body>
+    <!-- Include Navbar -->
+    {% include 'webapp/navbar.html' %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} text-center" role="alert">
+        {{ message }}
+        {% if message.tags == 'success' %}
+            <i class="fa fa-check-circle" aria-hidden="true"></i>
+        {% elif message.tags == 'info' %}
+            <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+        {% elif message.tags == 'warning' %}
+            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+        {% elif message.tags == 'error' or message.tags == 'danger' %}
+            <i class="fa fa-times-circle" aria-hidden="true"></i>
+        {% endif %}
+    </div>
+{% endfor %}
+    
+    <div class="container">
+        <br>
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Bootstrap and JavaScript dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Include Micromodal.js from CDN -->
+  
+
+
+ 
+    
+
+    <!-- Script to hide success messages after 3 seconds -->
+    <script>
+        $(document).ready(function() {
+            setTimeout(function() {
+                $(".alert-success").fadeOut("slow", function() {
+                    $(this).remove();  // Optionally, you can remove the element after fade out
+                });
+            }, 2000);  // Hide after 3 seconds
+        });
+        $(document).ready(function() {
+            setTimeout(function() {
+                $(".alert-warning").fadeOut("slow", function() {
+                    $(this).remove();  // Optionally, you can remove the element after fade out
+                });
+            }, 2000);  // Hide after 3 seconds
+        });
+    </script>
+</body>
+</html>

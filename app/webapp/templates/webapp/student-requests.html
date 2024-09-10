@@ -1,0 +1,304 @@
+{% extends 'webapp/base.html' %}
+
+{% block content %}
+<div class="container mt-2 border  border-2 rounded-3 shadow-sm p-3 mb-5 bg-white"> <!-- Added border and styling -->
+    <h2>Pending Student Registrations</h2>
+    
+    <!-- Search and Filters -->
+    <div class="filters mb-3"> <!-- Added margin-bottom -->
+        <input type="text" id="searchInput" class="form-control border border-info" placeholder="Search by name or email..." onkeyup="filterTable()"> <!-- Added border -->
+        <select id="statusFilter" class="form-select border border-info" onchange="filterTable()"> <!-- Added border -->
+            <option value="">All</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+    </div>
+    
+    {% if students %}
+        <table id="studentsTable" class="table table-hover table-light border border-secondary"> <!-- Added border -->
+            <thead class="table-primary border border-dark"> <!-- Added border -->
+                <tr>
+                    <th>ID</th>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td>{{ student.id }}</td>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.first_name }}</td>
+                        <td>{{ student.course }}</td>
+                        <td>{{ student.creation_date }}</td>
+                        <td>{{ student.status }}</td>
+                        <td class="actions">
+                            <a href="{% url 'approve-request' student.id %}" class="btn btn-success btn-sm" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </a>
+                            <a href="{% url 'reject-request' student.id %}" class="btn btn-danger btn-sm" title="Reject">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            <a href="#" class="btn btn-primary btn-sm" title="View Details" data-bs-toggle="modal" data-bs-target="#studentModal" onclick="loadStudentDetails('{{ student.id }}')">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>                        
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Pagination -->
+        <div class="pagination mt-3"> <!-- Added margin-top -->
+            <button id="prevPage" class="btn btn-secondary" onclick="changePage(-1)">Previous</button>
+            <span id="pageInfo">Page 1</span>
+            <button id="nextPage" class="btn btn-secondary" onclick="changePage(1)">Next</button>
+        </div>
+    {% else %}
+        <p class="no-data">No pending registrations at the moment.</p>
+    {% endif %}
+</div>
+
+<!-- Student Details Modal -->
+<div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border border-primary">
+            <div class="modal-header">
+                <h5 class="modal-title" id="studentModalLabel">Student Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="studentDetailsContent" class="text-center">
+                    <!-- Dynamic content will be loaded here -->
+                    Loading details...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Light theme adjustments */
+    body {
+        background-color: #f8f9fa;
+        color: #212529;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        border: 2px solid #007bff; /* Border added */
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #007bff;
+        font-size: 2.2em;
+    }
+    .filters {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #e9ecef;
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .pagination button {
+        margin: 0 5px;
+    }
+    .no-data {
+        text-align: center;
+        color: #6c757d;
+        font-size: 1.2em;
+        margin: 20px 0;
+    }
+
+    /* Custom styles for table headers */
+    .table-primary th {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+    }
+    .table-primary th.active {
+        background-color: #0056b3;
+        color: #f8f9fa;
+    }
+    .modal-content {
+        border-radius: 8px;
+        border: 2px solid #007bff;
+    }
+    .modal-header, .modal-footer {
+        background-color: #f1f1f1;
+    }
+    .modal-title {
+        color: #007bff;
+    }
+    .modal-body {
+        padding: 2rem;
+    }
+    .student-details-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: left;
+    }
+    .student-details-card .card-body {
+        padding: 2rem;
+        
+    }
+    .student-details-card img {
+        max-width: 150px;
+        max-height: 150px;
+        border: 2px solid #007bff;
+        border-radius: 50%;
+    }
+    .student-details-card dl {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0;
+        padding: 0;
+   
+    }
+    .student-details-card dt, .student-details-card dd {
+        margin: 0;
+        padding: 0.5rem 0;
+        width: 100%;
+        font-weight: bold;
+        
+    }
+    .student-details-card dt {
+        text-align: right;
+        width: 30%;
+        font-weight: bold;
+        color: #007bff;
+        text-align: left;
+    }
+    .student-details-card dd {
+        width: 70%;
+        
+    }
+</style>
+
+<script>
+    let currentPage = 1;
+    const rowsPerPage = 5;
+
+    function changePage(direction) {
+        const table = document.getElementById('studentsTable').getElementsByTagName('tbody')[0];
+        const totalRows = table.getElementsByTagName('tr').length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        if ((currentPage === 1 && direction === -1) || (currentPage === totalPages && direction === 1)) {
+            return;
+        }
+
+        currentPage += direction;
+        displayPage(currentPage);
+    }
+
+    function displayPage(page) {
+        const table = document.getElementById('studentsTable').getElementsByTagName('tbody')[0];
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            rows[i].style.display = 'none';
+        }
+
+        for (let i = (page - 1) * rowsPerPage; i < page * rowsPerPage && i < rows.length; i++) {
+            rows[i].style.display = '';
+        }
+
+        document.getElementById('pageInfo').innerText = `Page ${page}`;
+    }
+
+    function filterTable() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        const table = document.getElementById('studentsTable').getElementsByTagName('tbody')[0];
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            const name = rows[i].getElementsByTagName('td')[1].innerText.toLowerCase();
+            const email = rows[i].getElementsByTagName('td')[2].innerText.toLowerCase();
+            const status = rows[i].getElementsByTagName('td')[4].innerText;
+
+            if ((name.includes(searchInput) || email.includes(searchInput)) &&
+                (statusFilter === '' || status === statusFilter)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+
+        displayPage(1);
+    }
+
+     function loadStudentDetails(studentId) {
+        const studentDetailsContent = document.getElementById('studentDetailsContent');
+        studentDetailsContent.innerHTML = `Loading details for student ID: ${studentId}...`;
+
+        fetch(`/student-details/${studentId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const profileImage = data.picture ? 
+                    `<img src="${data.picture}" alt="Profile Picture" class="img-fluid rounded-circle border border-primary">` 
+                    : '<p>No picture available</p>';
+
+                studentDetailsContent.innerHTML = `
+                    <div class="student-details-card">
+                        <div class="mb-4">
+                            ${profileImage}
+                        </div>
+                        <dl>
+                            <dt>Student ID:</dt>
+                            <dd>${data.student_id}</dd>
+                            <dt>Name:</dt>
+                            <dd>${data.first_name} ${data.middle_name ? data.middle_name + ' ' : ''}${data.last_name} ${data.suffix ? data.suffix : ''}</dd>
+                            <dt>Email:</dt>
+                            <dd>${data.email || 'Not provided'}</dd>
+                            <dt>Course:</dt>
+                            <dd>${data.course || 'Not provided'}</dd>
+                            <dt>Major:</dt>
+                            <dd>${data.major || 'Not provided'}</dd>
+                            <dt>Registration Date:</dt>
+                            <dd>${data.creation_date}</dd>
+                            <dt>Status:</dt>
+                            <dd>${data.status}</dd>
+                        </dl>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                console.error('Error fetching student details:', error);
+                studentDetailsContent.innerHTML = '<p>Error loading student details.</p>';
+            });
+    }
+    function approveStudent(studentId) {
+        alert(`Student ID ${studentId} approved.`);
+    }
+
+    function rejectStudent(studentId) {
+        alert(`Student ID ${studentId} rejected.`);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        displayPage(1);
+    });
+</script>
+{% endblock %}

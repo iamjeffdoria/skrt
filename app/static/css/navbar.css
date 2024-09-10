@@ -1,0 +1,164 @@
+/*===== GOOGLE FONTS =====*/
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
+/*===== VARIABLES CSS =====*/
+:root {
+    --nav-width: 92px;
+
+    /*===== Colors =====*/
+    --first-color: #0C5DF4;
+    --bg-color: #000;
+    --sub-color: #B6CEFC;
+    --white-color: #FFF;
+
+    /*===== Fonts =====*/
+    --body-font: 'Poppins', sans-serif;
+    --normal-font-size: 1rem;
+    --small-font-size: .875rem;
+
+    /*===== z-index =====*/
+    --z-fixed: 100;
+}
+
+/*===== BASE =====*/
+*, ::before, ::after {
+    box-sizing: border-box;
+}
+
+body {
+    position: relative;
+    margin: 0;
+    padding: 2rem 0 0 6.75rem;
+    font-family: var(--body-font);
+    font-size: var(--normal-font-size);
+    /* Removing transitions on body to avoid unwanted layout shifts */
+    transition: none;
+}
+
+h1 {
+    margin: 0;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+/*===== NAVBAR =====*/
+.l-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--nav-width);
+    height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--white-color);
+    padding: 1.5rem 1.5rem 2rem;
+    /* Keep transition for the collapsing effect */
+    transition: 0.5s ease;  /* Smooth transition for collapsing */
+    z-index: var(--z-fixed);
+}
+
+.nav {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.nav__brand {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.nav__logo {
+  color: var(--white-color);  /* Gatepass System will be white */
+  font-weight: 600;
+  text-decoration: none !important;
+}
+
+.nav__toggle {
+    font-size: 1.25rem;
+    padding: .75rem;
+    cursor: pointer;
+    /* Keep transition for smooth toggle */
+    transition: 0.5s ease;  /* Smooth transition on toggle */
+}
+
+.nav__link {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    align-items: center;
+    column-gap: .75rem;
+    padding: .75rem;
+    color: white;
+    border-radius: .5rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    /* Reduced transitions to prevent layout shifts */
+    transition: none;  /* Avoid transitions on nav links */
+    
+}
+
+.nav__link:hover {
+    background-color: var(--first-color);
+    color: var(--white-color);
+    
+}
+
+.nav__icon {
+    font-size: 1.25rem;
+}
+
+.nav__name {
+    font-size: var(--small-font-size);
+}
+
+/*===== EXPANDER MENU =====*/
+.expander {
+    width: calc(var(--nav-width) + 9.25rem);  /* Ensure consistent width */
+    transition: 0.5s ease;  /* Keep transition for expander */
+}
+
+.body-pd {
+    padding: 2rem 0 0 16rem;  /* Consistent padding to avoid layout shifts */
+}
+
+/*===== COLLAPSE =====*/
+.collapse {
+    grid-template-columns: 20px max-content 1fr;
+    transition: 0.5s ease;  /* Keep transition for smooth collapse */
+}
+
+.collapse__menu {
+    display: none;  /* Start collapsed */
+    padding: .75rem 2.25rem; 
+}
+
+.collapse__sublink {
+    color: var(--sub-color);
+    font-size: var(--small-font-size);
+}
+
+.showCollapse {
+    display: block;  /* Avoid transitions here to prevent layout shifts */
+}
+
+/* Retain transition for collapse animations */
+.rotate {
+    transform: rotate(180deg);
+    transition: 0.5s ease;  /* Keep transition for rotation */
+}
+
+
+a.nav__link:hover {
+    text-decoration: none !important;  /* Ensure no underline on hover */
+}
