@@ -60,15 +60,17 @@
 
                 <label for="id_middle_name"><i class="fa fa-user" aria-hidden="true"></i> Middle Name</label>
                 {{ form.middle_name|as_crispy_field }}
-            </div>
 
+                <label for="id_last_name"><i class="fa fa-user" aria-hidden="true"></i> Last Name</label>
+                {{ form.last_name|as_crispy_field }}
+            </div>
+              
             <!-- Right Column -->
             <div class="col-md-6">
 
                
 
-                <label for="id_last_name"><i class="fa fa-user" aria-hidden="true"></i> Last Name</label>
-                {{ form.last_name|as_crispy_field }}
+             
                 
                 <label for="id_suffix"><i class="fa fa-user" aria-hidden="true"></i> Suffix</label>
                 {{ form.suffix|as_crispy_field }}

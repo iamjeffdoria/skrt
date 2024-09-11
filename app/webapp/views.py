@@ -928,6 +928,8 @@ def all_logs(request):
     except ZeroDivisionError:
         logs = paginator.page(1)  # Default to the first page if an error occurs
 
+    
+
     # Pass course and major choices for the filter dropdowns
     course_choices = [
         ('BSMT', 'Bachelor of Science in Marine Transportation'),
