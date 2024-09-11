@@ -45,9 +45,6 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 
 
-
-
-
 def student_register(request):
     if request.method == 'POST':
         form = StudRecForm(request.POST, request.FILES)
@@ -450,12 +447,23 @@ def create_record(request):
         if form.is_valid():
             rfid_number = form.cleaned_data['rfid_number']
             student_id = form.cleaned_data['student_id']
+            password = form.cleaned_data['password']  # Get the plain password from the form
+
+            # Check for existing RFID number or student ID
             if studRec.objects.filter(rfid_number=rfid_number).exists():
                 messages.warning(request, 'RFID number already exists.')
             elif studRec.objects.filter(student_id=student_id).exists():
                 messages.warning(request, 'Student ID already exists.')
             else:
-                form.save()
+                # Create the student instance but don't save yet
+                student = form.save(commit=False)
+
+                # Hash the password
+                student.password = make_password(password)
+
+                # Save the student record with the hashed password
+                student.save()
+
                 messages.success(request, 'Record added successfully.')
                 return redirect('dashboard')
         else:
@@ -467,6 +475,8 @@ def create_record(request):
         form = CreateRecordForm()
 
     return render(request, 'webapp/create-record.html', {'form': form})
+
+
 
         
 # Update Record

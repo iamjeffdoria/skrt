@@ -5,7 +5,6 @@ from .models import Report
 from django.contrib.auth.forms import AuthenticationForm
 from django.forms.widgets import PasswordInput, TextInput
 from .models import studRec
-
 from .models import UserProfile 
 
 
@@ -63,9 +62,9 @@ class LoginForm(AuthenticationForm):
     )
 
 # Form for creating a new record
+# Form for creating a new record
 class CreateRecordForm(forms.ModelForm):
   
-
     class Meta:
         model = studRec
         fields = [
@@ -77,8 +76,9 @@ class CreateRecordForm(forms.ModelForm):
             'course',
             'major',
             'rfid_number',
-            'picture',  # Include the picture field for image uploads
-            
+            'picture',
+            'email',      # Add email field
+            'password',   # Add password field
         ]
 
     def __init__(self, *args, **kwargs):
@@ -89,7 +89,7 @@ class CreateRecordForm(forms.ModelForm):
         self.fields['first_name'].required = True
         self.fields['first_name'].label = ""
         self.fields['first_name'].widget.attrs.update({'placeholder': 'Enter First Name'})
-        self.fields['middle_name'].required = False  # Middle name is optional
+        self.fields['middle_name'].required = False
         self.fields['middle_name'].label = ""
         self.fields['middle_name'].widget.attrs.update({'placeholder': 'Enter Middle Name'})
         self.fields['last_name'].required = True
@@ -109,6 +109,17 @@ class CreateRecordForm(forms.ModelForm):
         self.fields['rfid_number'].widget.attrs.update({'placeholder': 'Enter RFID Number'})
         self.fields['picture'].required = True
         self.fields['picture'].label = ""
+
+        # Email field customization
+        self.fields['email'].required = True
+        self.fields['email'].label = ""
+        self.fields['email'].widget.attrs.update({'placeholder': 'Enter Email'})
+
+        # Password field customization
+        self.fields['password'].required = True
+        self.fields['password'].label = ""
+        self.fields['password'].widget = forms.PasswordInput(attrs={'placeholder': 'Enter Password'})  # Use PasswordInput for security
+
 
 
 

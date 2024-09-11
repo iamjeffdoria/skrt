@@ -82,6 +82,11 @@
                 <label for="id_student_id" ><i class="fa fa-id-card" aria-hidden="true"></i> Student ID</label>
               
                 {{ form.student_id|as_crispy_field }}
+                <label for="id_email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</label>
+                {{ form.email|as_crispy_field }}
+        
+                <label for="id_password"><i class="fa fa-lock" aria-hidden="true"></i> Password</label>
+                {{ form.password|as_crispy_field }}
             </div>
         </div>
 
