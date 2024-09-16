@@ -1,70 +1,73 @@
+/* Navbar Styling */
 .navbar {
-    background: #000; /* Clean black background */
-    border-bottom: 2px solid #333; /* Subtle dark border */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Soft shadow */
-    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #121212, #1c1c1c); /* Subtle gradient for a professional feel */
+    border-bottom: 1px solid #444; /* Refined border */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8); /* Deeper shadow for more depth */
+    font-family: 'Poppins', serif; /* Poppins serif */
 }
 
+/* Logo and Branding */
 .navbar-brand {
-    font-size: 1.25rem;
-    font-weight: bold;
+    font-size: 1.5rem;
+    font-weight: 500; /* Semi-bold for a strong presence */
     color: #fff; /* White text */
 }
 
 .navbar-brand .logo {
-    width: 40px;
-    height: 40px;
-    margin-right: 8px;
+    width: 50px;
+    height: 50px;
+    margin-right: 12px; /* Increased margin for better spacing */
 }
 
+/* Toggler Styling */
 .navbar-toggler {
-    border: 1px solid #444; /* Dark gray border */
+    border: 1px solid #555;
 }
 
 .navbar-toggler-icon {
-    background-image: linear-gradient(135deg, #444, #666); /* Subtle gradient for toggler */
+    background-image: linear-gradient(135deg, #444, #888); /* Subtle gradient for the toggler icon */
 }
 
+/* Navbar Links */
 .navbar-nav .nav-link {
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-    color: #ccc; /* Light gray text */
-    transition: color 0.3s ease, background-color 0.3s ease;
+    font-size: 1.1rem; /* Larger font for better readability */
+    padding: 0.6rem 1.2rem;
+    color: #ccc;
+    transition: color 0.4s ease, background-color 0.4s ease;
 }
 
 .navbar-nav .nav-link:hover {
-    color: #fff; /* White text on hover */
-    background-color: #333; /* Dark gray background on hover */
+    color: #f0f0f0; /* Lighter white on hover */
+    background-color: #333; /* Darker background on hover */
 }
 
-/* Logout button styling */
+/* Logout Button Styling */
 .logout-btn {
-    display: flex;
-    align-items: center;
-    color: #ccc; /* Light gray text */
+    color: #ccc;
+    transition: color 0.4s ease, background-color 0.4s ease;
 }
 
 .logout-btn:hover {
-    color: #fff; /* White text on hover */
+    color: #f0f0f0;
 }
 
-/* Loading animation (clean, without neon) */
+/* Loading Animation (Professional, Minimal) */
 .loading-container {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     display: none;
-    z-index: 9999; /* Ensure it appears above other content */
+    z-index: 9999;
 }
 
 .loading-spinner {
     width: 60px;
     height: 60px;
-    border: 4px solid #555; /* Dark gray border */
-    border-top: 4px solid transparent; /* Transparent top to create spinning effect */
+    border: 5px solid #666;
+    border-top: 5px solid transparent;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 1.2s linear infinite;
 }
 
 @keyframes spin {
