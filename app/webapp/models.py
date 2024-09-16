@@ -7,19 +7,48 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from PIL import Image
 from django.core.validators import EmailValidator
-from django.contrib.auth.hashers import make_password
-from django.core.validators import EmailValidator
+from django.contrib.auth.hashers import make_password,check_password
 
 
+
+
+class HeadOfSecurity(models.Model):
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100)
+    
+    picture = models.ImageField(upload_to='security_pictures/', null=True, blank=True)
+    password = models.CharField(max_length=128)  # Hashed password
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Hash password only when the instance is created
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
+        
+        # Resize and crop the picture
+        if self.picture:
+            with Image.open(self.picture.path) as img:
+                min_dimension = min(img.size)
+                left = (img.width - min_dimension) // 2
+                top = (img.height - min_dimension) // 2
+                right = left + min_dimension
+                bottom = top + min_dimension
+                img = img.crop((left, top, right, bottom))
+                img.save(self.picture.path)
 
 
 class UserProfile(models.Model):
     USER_TYPES = [
         ('admin', 'Admin'),
         ('student', 'Student'),
+        ('head_of_security', 'Head of Security'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='student')
+    user_type = models.CharField(max_length=20, choices=USER_TYPES, default='student')
     picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
 
     def __str__(self):

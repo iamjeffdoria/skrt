@@ -43,6 +43,34 @@ from django.db.models import Count
 from django.utils.dateparse import parse_date
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from .models import HeadOfSecurity
+
+def head_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        try:
+            # Find the head of security by username
+            head_security = HeadOfSecurity.objects.get(username=username)
+            
+            # Manually check the password
+            if check_password(password, head_security.password):
+                request.session['user_type'] = 'head_of_security'
+                # Log the user in by setting session data or redirect them
+                request.session['security_id'] = head_security.id  # Example of session data
+                return redirect('head-dashboard')
+            else:
+                messages.error(request, 'Invalid login credentials.')
+        except HeadOfSecurity.DoesNotExist:
+            messages.error(request, 'Invalid login credentials.')
+
+    return render(request, 'webapp/head-login.html')
+
+
+def head_dashboard(request):
+    return render(request, 'webapp/head-dashboard.html')
+
 
 
 def student_register(request):
@@ -648,6 +676,11 @@ def student_logout(request):
         auth.logout(request)
         messages.success(request, "Logged out.")
         return redirect('stud-login')
+
+def head_logout(request):
+        auth.logout(request)
+        messages.success(request, "Logged out.")
+        return redirect('head-login')
             
 @login_required(login_url='login')
 def block_student(request, pk):
