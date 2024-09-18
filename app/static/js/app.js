@@ -58,27 +58,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const profileTable = document.querySelector(".profile-table");
     profileTable.innerHTML = `
+      
+      
         <tr>
-            <th colspan="3">  <i class="fa fa-id-card" aria-hidden="true"></i> &nbsp; STUDENT ID</th>
-        </tr>
-        <tr>
-            <td colspan="3">${studentData.student_id}</td>
-        </tr>
-        <tr>
-            <th colspan="3"><i class="fa fa-users" aria-hidden="true"></i> &nbsp; NAME </th>
-        </tr>
-        <tr>
-            <td colspan="3">${studentData.first_name} ${middleNameInitial} ${studentData.last_name}${suffix}</td>
+            <th> <ion-icon name="alarm-sharp"></ion-icon> &nbsp;TIME </th>
         </tr>
 
         <tr>
-            <th> <ion-icon name="alarm-sharp"></ion-icon> &nbsp;TIME </th>
-            <th><ion-icon name="keypad-sharp"></ion-icon>&nbsp;TYPE </th>
-            <th> <ion-icon name="calendar-sharp"></ion-icon>&nbsp;DATE </th>
+         <td>${studentData.time}</td>
         </tr>
+
         <tr>
-            <td>${studentData.time}</td>
-            <td>${studentData.type === "login" ? "Login" : "Logout"}</td>
+        <th><ion-icon name="keypad-sharp"></ion-icon>&nbsp;TYPE </th>
+        </tr>
+
+        <tr>
+         <td>${studentData.type === "login" ? "Login" : "Logout"}</td>
+        </tr>
+
+        <tr>
+         <th> <ion-icon name="calendar-sharp"></ion-icon>&nbsp;DATE </th>
+        </tr>
+
+        <tr>
             <td>${studentData.date}</td>
         </tr>
     `;
@@ -87,22 +89,22 @@ document.addEventListener("DOMContentLoaded", function () {
     rfidInput.focus();
 }
 
-  // Function to update recent logs
-  function updateRecentLogs(logs) {
-    miniTableBody.innerHTML = '';  // Clear the current table content
-    logs.forEach(log => {
-        const row = document.createElement("tr");
-        const logDateTime = new Date(log.time);
-        const formattedDateTime = logDateTime.toLocaleDateString() + ' ' + logDateTime.toLocaleTimeString();
-        
-        row.innerHTML = `
-            <td>${formattedDateTime}</td>
-            <td>${log.student.first_name} ${log.student.middle_name || ''} ${log.student.last_name}</td>
-            <td>${log.type.charAt(0).toUpperCase() + log.type.slice(1)}</td>
-        `;
-        miniTableBody.appendChild(row);
-    });
+function updateRecentLogs(logs) {
+  miniTableBody.innerHTML = ''; // Clear the mini table body
+  logs.forEach(log => {
+      // Use default image if the student has no picture
+      const defaultPicture = '/path/to/default-image.jpg';
+      const pictureUrl = log.student.picture ? log.student.picture : defaultPicture;
+
+      // Create a row for the mini table
+      const row = document.createElement("tr");
+      row.innerHTML = `
+          <td><img src="${pictureUrl}" alt="Profile Picture" class="student-pic"></td>
+      `;
+      miniTableBody.appendChild(row); // Append the row to the mini table
+  });
 }
+
 
   // Functions to show Toastify messages for login and logout
   function showLoginMessage(studentData) {

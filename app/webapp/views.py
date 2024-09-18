@@ -108,7 +108,6 @@ def student_register(request):
 def process_rfid(request):
     if request.method == 'POST':
         rfid_number = request.POST.get('rfid_number')
-
         student = studRec.objects.filter(rfid_number=rfid_number).first()
 
         if student:
@@ -119,12 +118,7 @@ def process_rfid(request):
 
                 # Check logs for the current day
                 today_logs = AttendanceLog.objects.filter(student=student, time__date=current_date)
-
-                if today_logs.count() == 0:
-                    record_type = 'login'
-                else:
-                    last_log = today_logs.order_by('-time').first()
-                    record_type = 'logout' if last_log.type == 'login' else 'login'
+                record_type = 'login' if today_logs.count() == 0 else 'logout' if today_logs.order_by('-time').first().type == 'login' else 'login'
 
                 new_log = AttendanceLog.objects.create(
                     student=student,
@@ -133,30 +127,28 @@ def process_rfid(request):
                     time=current_time,
                 )
 
-                if record_type == 'login':
-                    new_log.date_in = current_date
-                else:
-                    new_log.date_out = current_date
-
+                new_log.date_in = current_date if record_type == 'login' else None
+                new_log.date_out = current_date if record_type == 'logout' else None
                 new_log.save()
 
-                # Get recent logs excluding the current student's logs
-                recent_logs = AttendanceLog.objects.exclude(student=student).order_by('-time')[:2]  # Adjust as needed
+                # Fetch recent logs excluding the current student, ensure three logs
+                recent_logs = AttendanceLog.objects.exclude(student=student).order_by('-time')[:3]
+
+                # Handle cases where fewer than 3 logs exist
+                if recent_logs.count() < 3:
+                    # Fill the recent_logs list with empty values to always have 3 items
+                    recent_logs = list(recent_logs) + [None] * (3 - recent_logs.count())
+
                 recent_log_list = [
                     {
-                        'time': log.time.isoformat(),
                         'student': {
-                            'first_name': log.student.first_name,
-                            'middle_name': log.student.middle_name,
-                            'last_name': log.student.last_name
+                            'picture': log.student.picture.url if log and log.student.picture else None
                         },
-                        'type': log.type
                     }
                     for log in recent_logs
                 ]
 
                 response_data = {
-                    'student_id': student.student_id,
                     'first_name': student.first_name,
                     'middle_name': student.middle_name,
                     'last_name': student.last_name,
@@ -167,7 +159,7 @@ def process_rfid(request):
                     'date': local_time.strftime('%Y-%m-%d'),
                     'picture': settings.MEDIA_URL + str(student.picture) if student.picture else None,
                     'type': record_type,
-                    'recent_logs': recent_log_list  # Add recent logs to the response
+                    'recent_logs': recent_log_list  # Pass recent logs to the template
                 }
 
                 return JsonResponse({'status': 'success', 'data': response_data})
@@ -176,6 +168,7 @@ def process_rfid(request):
         return JsonResponse({'status': 'error', 'message': 'Student not found'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
 
 
 # Homepage
@@ -316,17 +309,13 @@ def dashboard_real(request):
          'recent_students':recent_students,
         'recent_logs': recent_logs,
         # Add other context variables as needed
-    }
+    }   
     return render(request, 'webapp/dashboard2.html',context)
-
-
 
 
 
 def student_dashboard(request):
     return render(request, 'webapp/stud-dash.html')
-
-
 
 
 def student_login(request):
@@ -503,8 +492,6 @@ def create_record(request):
         form = CreateRecordForm()
 
     return render(request, 'webapp/create-record.html', {'form': form})
-
-
 
         
 # Update Record
@@ -832,8 +819,6 @@ def student_request(request):
     students = PendingRequests.objects.all()
 
     return render(request, 'webapp/student-requests.html', {'students': students})
-
-
 
 def approve_request(request, request_id):
     pending_request = get_object_or_404(PendingRequests, id=request_id)

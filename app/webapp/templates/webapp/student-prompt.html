@@ -38,7 +38,7 @@
         <!-- Added name tag below the profile picture -->
         <div id="student-info" class="student-info">
             <div id="student-name" class="student-name">-----</div>
-            <p id="student-course" class="student-course">-------</p>
+            <div id="student-course" class="student-course">-------</div>
         </div>
        
     </div>
@@ -48,57 +48,41 @@
         <table class="profile-table">
             <tbody>
                 <!-- Table structure with smaller keys and larger values -->
+             
                 <tr>
-                    <th colspan="3"> <i class="fa fa-id-card" aria-hidden="true"></i> &nbsp; STUDENT ID </th>
+                    <th colspan="1"> <ion-icon name="alarm-sharp"></ion-icon> &nbsp; TIME </th> 
+                    
                 </tr>
                 <tr>
-                    <td colspan="3">-----</td>
-                </tr>
-                
-                <tr>
-                    <th colspan="3"><i class="fa fa-users" aria-hidden="true"></i> &nbsp; NAME </th>
+                    <td colspan="1">-----</td>
                 </tr>
                 <tr>
-                    <td colspan="3">-----</td>
-                </tr>
-                
-                <tr>
-                    <th> <ion-icon name="alarm-sharp"></ion-icon> &nbsp; TIME </th> 
                     <th><ion-icon name="keypad-sharp"></ion-icon> &nbsp; TYPE </th> 
+                </tr>
+                <tr>
+                    <td colspan="1">-----</td>
+                </tr>
+                <tr>
                     <th> <ion-icon name="calendar-sharp"></ion-icon> &nbsp; DATE </th> 
                 </tr>
                 <tr>
-                    <td>-----</td>
-                    <td>-----</td>      
-                    <td>-----</td>
+                    <td colspan="1">-----</td>
                 </tr>
             </tbody>
         </table>
 
         <hr>
 
-        <!-- Mini Data Table for Recent Logs -->
-        <div class="recent-logs">
-            <h3>Recent Students</h3>
-            <table class="mini-table">
-                <thead>
-                    <tr>
-                        <th>DATE AND TIME</th>
-                        <th>NAME</th>
-                        <th>LOG TYPE</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in recent_logs %}
-                    <tr>
-                        <td>{{ log.time|date:"H:i" }}</td>
-                        <td>{{ log.student.first_name }} {{ log.student.middle_name|default_if_none:'' }} {{ log.student.last_name }}</td>
-                        <td>{{ log.type|capfirst }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+      <!-- Mini Data Table for Recent Logs -->
+<!-- Mini Data Table for Recent Logs -->
+<div class="recent-logs mt-0">
+    <h3>Recent Students</h3>
+    <table class="mini-table mt-0">
+        <tbody>
+      
+        </tbody>
+    </table>
+</div>
 
         
     </div>
