@@ -107,8 +107,6 @@ MAJOR_CHOICES = [
     ('No Major', 'No Major'),
 ]
 
-
-
 class studRec(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     student_id = models.CharField(max_length=20)

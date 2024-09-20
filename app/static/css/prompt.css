@@ -13,7 +13,7 @@ body {
 }
 
 .school-name {
-    font-size: 2.7em; /* Increased font size */
+    font-size: 2.8em; /* Increased font size */
     font-weight: bold;
     color: #ffffff;
     margin: 0;
@@ -149,7 +149,7 @@ h2 {
     margin: 0 15px; /* Increased spacing */
 }
 .time-date {
-    font-size: 43px; /* Increased font size */
+    font-size: 47px; /* Increased font size */
     font-weight: bold;
     color: #ffffff; /* Solid neon green color */
     text-align: center;

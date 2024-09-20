@@ -1,8 +1,474 @@
-{% extends 'webapp/base.html' %}
-
+{% extends 'webapp/base2.html' %}
 
 {% block content %}
+<div class="container-fluid">
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Dashboard Content -->
+        <main class="col-12 px-2">
+            <div class="row mb-4">
+                <!-- Cards with Icons -->
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-white bg-primary shadow-sm">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <i class="fas fa-users fa-2x me-3"></i>
+                            <div>
+                                <h6 class="card-title mb-1">Students</h6>
+                                <p class="card-text mb-0">{{ student_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-white bg-info shadow-sm">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <i class="fas fa-chart-bar fa-2x me-3"></i>
+                            <div>
+                                <h6 class="card-title mb-1">OSDS Clerk</h6>
+                                <p class="card-text mb-0">{{ admin_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-white bg-secondary shadow-sm">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <i class="fas fa-flag fa-2x me-3"></i>
+                            <div>
+                                <h6 class="card-title mb-1">PIT Head of Security</h6>
+                                <p class="card-text mb-0">1</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-white bg-dark shadow-sm">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <i class="fas fa-cogs fa-2x me-3"></i>
+                            <div>
+                                <h6 class="card-title mb-1">Settings</h6>
+                                <p class="card-text mb-0">12</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <!-- Charts -->
+                <div class="row mb-4">
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light shadow-sm">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <h6 class="card-title mb-0">Student Logs Overview</h6>
+                                <input type="month" id="monthFilter" class="form-control form-control-sm" />
+                            </div>
+                            <div class="card-body p-4">
+                                <canvas id="attendanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light shadow-sm">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <h6 class="card-title mb-0">Student Registration Growth</h6>
+                                <select id="yearFilter" class="form-select form-select-sm">
+                                    <!-- Options will be added dynamically -->
+                                </select>
+                            </div>
+                            <div class="card-body p-4">
+                                <canvas id="registrationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Data Tables -->
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light shadow-sm">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Recent Students Registered</h6>
+                            </div>
+                            <div class="card-body p-4">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Date Added</th>
+                                            <th>Name</th>
+                                            <th>Course</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for student in recent_students %}
+                                        <tr>
+                                            <td>{{ student.creation_date|date:"F j, Y" }}</td>
+                                            <td>{{ student.first_name }} {{ student.middle_name|default_if_none:'' }} {{ student.last_name }}</td>
+                                            <td>{{ student.course }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light shadow-sm">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Recent Logs</h6>
+                            </div>
+                            <div class="card-body p-4">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Date and Time</th>
+                                            <th>Name</th>
+                                            <th>Log Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for log in recent_logs %}
+                                        <tr>
+                                            <td>{{ log.time|date:"F j, Y, g:i A" }}</td>
+                                            <td>{{ log.student.first_name }} {{ log.student.middle_name|default_if_none:'' }} {{ log.student.last_name }}</td>
+                                            <td>{{ log.type }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    body {
+        background-color: #f0f2f5;
+        color: #1c1e21;
+    }
+
+    .card-header {
+        background-color: #ffffff;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header input[type="month"],
+    .card-header select {
+        max-width: 150px;
+        margin-left: auto; /* Pushes the date/year input to the right */
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+
+    .table {
+        color: #1c1e21;
+        font-size: 0.875rem;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #e7f3ff;
+    }
+
+    .card i {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .shadow-sm {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    main {
+        overflow: hidden;
+    }
+
+    .card .card-body p {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+</style>
 
 
-<h1>head dashboard</h1>
+<script>
+    // Initialize Charts with Smooth Animation and Enhanced Styles
+    document.addEventListener('DOMContentLoaded', function () {
+    const ctxAttendance = document.getElementById('attendanceChart').getContext('2d');
+    const attendanceChart = new Chart(ctxAttendance, {
+        type: 'bar',
+        data: {
+            labels: [], // Will be populated by AJAX
+            datasets: [{
+                label: 'Login',
+                data: [], // Will be populated by AJAX
+                backgroundColor: 'rgba(25, 135, 84, 0.8)',
+                borderColor: 'rgba(25, 135, 84, 1)',
+                borderWidth: 2
+            }, {
+                label: 'Logout',
+                data: [], // Will be populated by AJAX
+                backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                borderColor: 'rgba(220, 53, 69, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        borderDash: [8, 4]
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    function fetchAttendanceData(month) {
+        fetch(`/get-attendance-data/?month=${month}`)
+            .then(response => response.json())
+            .then(data => {
+                attendanceChart.data.labels = data.labels;
+                attendanceChart.data.datasets[0].data = data.login_data;
+                attendanceChart.data.datasets[1].data = data.logout_data;
+                attendanceChart.update();
+            })
+            .catch(error => console.error('Error fetching attendance data:', error));
+    }
+
+    // Update chart when month is changed
+    document.getElementById('monthFilter').addEventListener('change', function () {
+        fetchAttendanceData(this.value);
+    });
+
+    // Set default value for month filter to the current month
+    const currentMonth = new Date().toISOString().slice(0, 7); // Format YYYY-MM
+    document.getElementById('monthFilter').value = currentMonth;
+
+    // Fetch initial data for the current month
+    fetchAttendanceData(currentMonth);
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const ctxRegistration = document.getElementById('registrationChart').getContext('2d');
+    const registrationChart = new Chart(ctxRegistration, {
+        type: 'line',
+        data: {
+            labels: [], // Will be populated by AJAX
+            datasets: [{
+                label: 'Registrations',
+                data: [], // Will be populated by AJAX
+                backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                borderColor: 'rgba(255, 193, 7, 1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        borderDash: [8, 4]
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    function fetchRegistrationData(year) {
+        fetch(`/registration-data/?year=${year}`)
+            .then(response => response.json())
+            .then(data => {
+                registrationChart.data.labels = data.labels;
+                registrationChart.data.datasets[0].data = data.data;
+                registrationChart.update();
+            })
+            .catch(error => console.error('Error fetching registration data:', error));
+    }
+
+    // Fetch data initially for the current year
+    fetchRegistrationData(new Date().getFullYear());
+
+    // Update chart when year is changed
+    document.getElementById('yearFilter').addEventListener('change', function () {
+        fetchRegistrationData(this.value);
+    });
+
+    // Populate year dropdown
+    const yearFilter = document.getElementById('yearFilter');
+    const currentYear = new Date().getFullYear();
+    const maxYearsToShow = 5; // Number of years to show (including current year)
+
+    function populateDropdown() {
+        const options = Array.from(yearFilter.options).map(option => option.value); // Get existing options
+        for (let year = currentYear; year > currentYear - maxYearsToShow; year--) {
+            if (!options.includes(year.toString())) { // Add year if it's not already in the dropdown
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            }
+        }
+    }
+
+    populateDropdown();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+        const ctxRegistration = document.getElementById('registrationChart').getContext('2d');
+        const registrationChart = new Chart(ctxRegistration, {
+            type: 'line',
+            data: {
+                labels: [], // Will be populated by AJAX
+                datasets: [{
+                    label: 'Registrations',
+                    data: [], // Will be populated by AJAX
+                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                animation: {
+                    duration: 2000,
+                    easing: 'easeInOutQuart'
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            borderDash: [8, 4]
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        function fetchRegistrationData(year) {
+            fetch(`/registration-data/?year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    registrationChart.data.labels = data.labels;
+                    registrationChart.data.datasets[0].data = data.data;
+                    registrationChart.update();
+                })
+                .catch(error => console.error('Error fetching registration data:', error));
+        }
+
+        // Fetch data initially for the current year
+        fetchRegistrationData(new Date().getFullYear());
+
+        // Update chart when year is changed
+        document.getElementById('yearFilter').addEventListener('change', function () {
+            fetchRegistrationData(this.value);
+        });
+    });
+
+
+
+//year filter
+    document.addEventListener('DOMContentLoaded', function () {
+        const yearFilter = document.getElementById('yearFilter');
+        const currentYear = new Date().getFullYear();
+        const maxYearsToShow = 5; // Number of years to show (including current year)
+
+        // Function to populate the dropdown
+        function populateDropdown() {
+            const options = Array.from(yearFilter.options).map(option => option.value); // Get existing options
+            for (let year = currentYear; year > currentYear - maxYearsToShow; year--) {
+                if (!options.includes(year.toString())) { // Add year if it's not already in the dropdown
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearFilter.appendChild(option);
+                }
+            }
+        }
+
+        populateDropdown();
+        
+        // Fetch data for the current year initially
+        fetchRegistrationData(currentYear);
+        
+        // Update chart when year is changed
+        yearFilter.addEventListener('change', function () {
+            fetchRegistrationData(this.value);
+        });
+    });
+
+    function fetchRegistrationData(year) {
+        fetch(`/registration-data/?year=${year}`)
+            .then(response => response.json())
+            .then(data => {
+                registrationChart.data.labels = data.labels;
+                registrationChart.data.datasets[0].data = data.data;
+                registrationChart.update();
+            })
+            .catch(error => console.error('Error fetching registration data:', error));
+    }
+
+</script>
+
 {% endblock %}

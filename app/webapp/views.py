@@ -69,7 +69,19 @@ def head_login(request):
 
 
 def head_dashboard(request):
-    return render(request, 'webapp/head-dashboard.html')
+    recent_students = studRec.objects.all().order_by('-creation_date')[:3]
+    student_count = studRec.objects.count()
+    recent_logs = AttendanceLog.objects.order_by('-time')[:3] 
+    admin_count = User.objects.filter(is_superuser=True).count()
+    context = {
+        'student_count': student_count,
+         'admin_count': admin_count,
+         'recent_students':recent_students,
+        'recent_logs': recent_logs,
+        # Add other context variables as needed
+    }   
+    return render(request, 'webapp/head-dashboard.html',context)
+
 
 
 
@@ -77,25 +89,30 @@ def student_register(request):
     if request.method == 'POST':
         form = StudRecForm(request.POST, request.FILES)
         if form.is_valid():
-            student = form.save(commit=False)
-            # Set the status to 'Pending'
-            student.status = 'Pending'
-            # Save to PendingRequests, including email and password
-            PendingRequests.objects.create(
-                student_id=student.student_id,
-                first_name=student.first_name,
-                middle_name=student.middle_name,
-                last_name=student.last_name,
-                suffix=student.suffix,
-                course=student.course,
-                major=student.major,
-                picture=student.picture,
-                email=student.email,       # Include email
-                password=make_password(student.password)
-  # Include password (consider hashing it)
-            )
-            messages.success(request, 'Student record created successfully and is now pending approval!')
-            return redirect('stud-login')  # Redirect to a login page or relevant page
+            student_id = form.cleaned_data.get('student_id')
+
+            # Check if the student ID already exists in PendingRequests
+            if studRec.objects.filter(student_id=student_id).exists():
+                messages.warning(request, 'A student with this ID already exists.')
+            else:
+                student = form.save(commit=False)
+                # Set the status to 'Pending'
+                student.status = 'Pending'
+                # Save to PendingRequests, including email and password
+                PendingRequests.objects.create(
+                    student_id=student.student_id,
+                    first_name=student.first_name,
+                    middle_name=student.middle_name,
+                    last_name=student.last_name,
+                    suffix=student.suffix,
+                    course=student.course,
+                    major=student.major,
+                    picture=student.picture,
+                    email=student.email,       # Include email
+                    password=make_password(student.password)  # Include hashed password
+                )
+                messages.success(request, 'Student record created successfully and is now pending approval!')
+                return redirect('stud-login')  # Redirect to a login page or relevant page
         else:
             messages.warning(request, 'Please correct the errors below.')
     else:
@@ -169,8 +186,6 @@ def process_rfid(request):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
-
-
 # Homepage
 
 def home(request):
@@ -181,7 +196,10 @@ def home(request):
     # Check if the student is logged in using session data
     if request.session.get('student_id'):
         return redirect('stud-dash')  # Redirect to the student dashboard if a student is logged in
-    
+
+    if request.session.get('security_id'):
+        return redirect('head-dashboard')
+
     # If neither, render the index page
     return render(request, 'webapp/index.html')
 
@@ -296,9 +314,7 @@ def login(request):
 
 @login_required(login_url='login')
 def dashboard_real(request):
-   
-
-
+    
     recent_students = studRec.objects.all().order_by('-creation_date')[:3]
     student_count = studRec.objects.count()
     recent_logs = AttendanceLog.objects.order_by('-time')[:3] 
@@ -469,6 +485,7 @@ def create_record(request):
             # Check for existing RFID number or student ID
             if studRec.objects.filter(rfid_number=rfid_number).exists():
                 messages.warning(request, 'RFID number already exists.')
+                
             elif studRec.objects.filter(student_id=student_id).exists():
                 messages.warning(request, 'Student ID already exists.')
             else:
@@ -502,6 +519,19 @@ def update_record(request, pk):
     if request.method == 'POST':
         form = UpdateRecordForm(request.POST, request.FILES, instance=record)  # Ensure to include request.FILES
         if form.is_valid():
+            student_id = form.cleaned_data.get('student_id')
+            rfid_number = form.cleaned_data.get('rfid_number')
+
+            # Check if student ID or RFID number already exists in another record
+            if studRec.objects.filter(student_id=student_id).exclude(pk=pk).exists():
+                messages.warning(request, 'A student with this ID already exists. Please check the details.')
+                return render(request, 'webapp/update-record.html', {'form': form, 'record': record})
+
+            if studRec.objects.filter(rfid_number=rfid_number).exclude(pk=pk).exists():
+                messages.warning(request, 'A student with this RFID number already exists. Please check the details.')
+                return render(request, 'webapp/update-record.html', {'form': form, 'record': record})
+
+            # If validation passes, save the updated record
             updated_record = form.save()  # Save the form
             messages.success(request, "Record Updated")  # Add success message
             return redirect('record', pk=updated_record.pk)  # Redirect after saving

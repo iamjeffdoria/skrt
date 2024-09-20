@@ -404,48 +404,190 @@
 
 {% elif request.session.user_type == 'head_of_security' %}
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Head of Security Dashboard</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand ms-3" href="#">Security Dashboard</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Reports</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'head-logout' %}">Logout</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{% static 'images/profile_picture.png' %}" alt="Profile" class="rounded-circle" style="width: 40px; height: 40px;">
-                        {{ request.user.username }}
+  <html lang="en">  
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     
+  
+      <link rel="stylesheet" href="{% static 'css/head-sidebar.css' %}">
+      
+  </head>
+  <body>
+  
+
+    <!-- Notification Bar -->
+    <div id="notification-bar" class="notification-bar">
+        <div class="notification-header">
+            <h4><i class="fa fa-bell"></i> Notifications</h4>
+            <span class="close-notification-bar">&times;</span>
+        </div>
+        <div class="notification-content">
+            <p>No new notifications</p>
+            
+        </div>
+    </div>
+   <!-- Loading Spinner -->
+<div class="spinner-overlay">
+    <div class="spinner"></div>
+</div>
+    
+      <div class="wrapper">
+        <header class="topbar">
+            <div class="topbar-content">
+                <div class="logo"> <img src="{% static 'img/pitLOGO.png' %}" style="width: 40px; height: 40px;">&nbsp; GATEPASS</div>
+                <div class="topbar-right">
+                    
+                    <div id="date-time" class="date-time"></div>
+                    <div style="display: flex; align-items: center;">
+        <!-- Notification Bell -->
+        <div class="notification-bell">
+            <i class="fa fa-bell"></i>
+            <span class="notification-count">3</span>
+        </div>
+                    
+                    <div class="dropdown">
+                        <a href="#" class="profile-link dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if request.user.userprofile.picture %}
+                                <img src="{{ request.user.userprofile.picture.url }}" alt="Profile Picture" class="profile-picture">
+                            {% else %}
+                                <ion-icon name="person-circle-outline"></ion-icon>
+                            {% endif %}
+                           
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="prof
+                        ileDropdown">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editProfileModal"><i class="fa fa-pencil" aria-hidden="true"></i> &nbsp; Edit Profile</a></li>
+
+                            <li><a class="dropdown-item" href="{% url 'head-logout' %}" id="logout-btn"><i class="fa fa-sign-out" aria-hidden="true"></i> &nbsp; Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+            </div>
+        </header>
+        
+        
+
+          <aside id="sidebar" class="expand">
+              <div class="d-flex">
+                  <button id="toggle-btn" type="button">
+                    <ion-icon name="grid-outline"></ion-icon>
+                  </button>
+                  <div class="sidebar-logo" style="color: white;"> 
+                     Welcome {{user.last_name}}
+                  </div>
+              </div>
+              <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="{% url 'head-dashboard'%}" class="sidebar-link">
+                        <ion-icon name="menu-outline"></ion-icon>
+                        <span>Dashboard</span>
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
-                        <li><a class="dropdown-item" href="#">Logout</a></li>
+                </li>
+               
+		  
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link has-dropdown collapsed no-loading" data-bs-toggle="collapse" 
+                    data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
+                        <ion-icon name="caret-down-outline"></ion-icon>
+                        <span>More Items</span>
+                    </a>
+                    <ul id="auth" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link no-loading" target="_blank">
+                                &nbsp;&nbsp;&nbsp; <i class="fa fa-desktop" aria-hidden="true"></i> &nbsp; Display Student
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link student-reports">
+                                &nbsp; &nbsp;&nbsp;&nbsp;<i class="fa fa-bell" aria-hidden="true"></i> &nbsp;   
+                                Student Reports
+                            </a> 
+                        </li>
+                      
                     </ul>
                 </li>
-            </ul>
+                 
+              </ul>
+          </aside>
+          <!-- Edit Profile Modal -->
+ 
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg"> <!-- Set modal width to large -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="editProfileModalLabel"><strong>Edit Profile</strong></h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" method="post" enctype="multipart/form-data" action="{% url 'update-profile' %}">
+                    {% csrf_token %}
+                    <div class="row">
+                        <!-- Column 1 -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="profile_picture" class="form-label"><strong><i class="fa fa-camera" aria-hidden="true"></i>&nbsp;Profile Picture:</strong></label>
+                                <!-- Image preview -->
+                                <div class="image-preview-container text-center mb-3">
+                                    <img id="profile-picture-preview" 
+                                         src="{% if user.userprofile.picture %}{{ user.userprofile.picture.url }}{% else %}{% static 'default-profile-picture.jpg' %}{% endif %}" 
+                                         alt="Profile Picture" 
+                                         class="img-fluid rounded-circle border" style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <input type="file" class="form-control custom-input" id="picture" name="picture">
+                            </div>
+                            <div class="mb-3">
+                                <label for="username" class="form-label"><strong><i class="fa fa-user" aria-hidden="true"></i> &nbsp; Username:</strong></label>
+                                <input type="text" class="form-control custom-input" id="username" name="username" value="{{ user.username }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label"><strong><i class="fa fa-user" aria-hidden="true"></i> &nbsp;First Name:</strong></label>
+                                <input type="text" class="form-control custom-input" id="first_name" name="first_name" value="{{ user.first_name }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label"><strong><i class="fa fa-envelope" aria-hidden="true"></i> &nbsp;Email:</strong></label>
+                                <input type="email" class="form-control custom-input" id="email" name="email" value="{{ user.email }}">
+                            </div>
+                        </div>
+                        <!-- Column 2 -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label"><strong><i class="fa fa-user" aria-hidden="true"></i> &nbsp;Last Name:</strong></label>
+                                <input type="text" class="form-control custom-input" id="last_name" name="last_name" value="{{ user.last_name }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label"><strong><i class="fa fa-key" aria-hidden="true"></i>&nbsp; New Password:</strong></label>
+                                <input type="password" class="form-control custom-input" id="new_password" name="new_password">
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label"><strong><i class="fa fa-lock" aria-hidden="true"></i>&nbsp;Confirm Password:</strong></label>
+                                <input type="password" class="form-control custom-input" id="confirm_password" name="confirm_password">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger custom-btn" data-bs-dismiss="modal"><strong>Cancel</strong></button>
+                <button type="submit" form="editProfileForm" class="btn btn-primary custom-btn"><strong>Save changes</strong></button>
+            </div>
         </div>
-    </nav>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
-</body>
-</html>
+        
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    
+      <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+      <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    
+      <script src="{% static 'js/head-sidebar.js' %}"></script>
+  </body>
+  </html>
 
         {% else %}
         <!DOCTYPE html>
