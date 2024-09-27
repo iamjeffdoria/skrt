@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from .forms import LoginForm, CreateRecordForm, UpdateRecordForm, CreateAdminForm
 from django.contrib.auth.models import User  
 from django.contrib.auth.models import auth
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta
@@ -45,27 +45,99 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from .models import HeadOfSecurity
 
-def head_login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
+
+
+def unified_login(request):
+   
+    if request.session.get('student_id'):
+        return redirect('stud-dash') 
+ 
+    if request.user.is_authenticated:
+        if request.session.get('user_type') == 'student':
+            return redirect('stud-dash')
+        elif request.session.get('user_type') == 'head_of_security':
+            return redirect('head-dashboard')
+        return redirect('dashboard-real')
+
+    if request.method == "POST":
+        username = request.POST.get('username', None)
         password = request.POST.get('password')
-        
+
+        # Check if the user is a student (by username)
         try:
-            # Find the head of security by username
+            student = studRec.objects.get(username=username)
+            if check_password(password, student.password):
+                # Log the student in
+                request.session['user_type'] = 'student'
+                request.session['student_id'] = student.student_id
+                request.session['student_name'] = f"{student.first_name} {student.last_name}"
+                request.session['student_picture'] = student.picture.url if student.picture else None
+                messages.success(request, "Logged in successfully.")
+                return redirect('stud-dash')
+            else:
+                messages.warning(request, "Invalid username or password.")
+        except studRec.DoesNotExist:
+            pass
+
+        # Check if the user is the head of security
+        try:
             head_security = HeadOfSecurity.objects.get(username=username)
-            
-            # Manually check the password
             if check_password(password, head_security.password):
                 request.session['user_type'] = 'head_of_security'
-                # Log the user in by setting session data or redirect them
-                request.session['security_id'] = head_security.id  # Example of session data
+                request.session['security_id'] = head_security.id
+                messages.success(request, "Logged in successfully.")
                 return redirect('head-dashboard')
             else:
-                messages.error(request, 'Invalid login credentials.')
+                messages.warning(request, "Invalid username or password.")
         except HeadOfSecurity.DoesNotExist:
-            messages.error(request, 'Invalid login credentials.')
+            pass
 
-    return render(request, 'webapp/head-login.html')
+        # Check for regular user login
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            auth_login(request, user)
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                request.session['user_type'] = user_profile.user_type
+                messages.success(request, "Logged in successfully.")
+                return redirect('dashboard-real')
+            except UserProfile.DoesNotExist:
+                messages.warning(request, "User profile not found.")
+        else:
+            messages.warning(request, "Invalid username or password.")
+
+    # Render the unified login form
+    context = {
+        'form': LoginForm()  # Make sure to include your unified form
+    }
+    return render(request, 'webapp/unified-login.html', context)
+
+
+
+# def head_login(request):
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         password = request.POST.get('password')
+        
+#         try:
+#             # Find the head of security by username
+#             head_security = HeadOfSecurity.objects.get(username=username)
+            
+#             # Manually check the password
+#             if check_password(password, head_security.password):
+#                 request.session['user_type'] = 'head_of_security'
+#                 # Log the user in by setting session data or redirect them
+#                 request.session['security_id'] = head_security.id  # Example of session data
+                
+#                 return redirect('head-dashboard')
+                
+#             else:
+#                 messages.error(request, 'Invalid login credentials.')
+#         except HeadOfSecurity.DoesNotExist:
+#             messages.error(request, 'Invalid login credentials.')
+
+#     return render(request, 'webapp/head-login.html')
+
 
 
 def head_dashboard(request):
@@ -83,17 +155,18 @@ def head_dashboard(request):
     return render(request, 'webapp/head-dashboard.html',context)
 
 
-
-
 def student_register(request):
     if request.method == 'POST':
         form = StudRecForm(request.POST, request.FILES)
         if form.is_valid():
             student_id = form.cleaned_data.get('student_id')
+            username = form.cleaned_data.get('username')
 
-            # Check if the student ID already exists in PendingRequests
+            # Check if the student ID or username already exists
             if studRec.objects.filter(student_id=student_id).exists():
                 messages.warning(request, 'A student with this ID already exists.')
+            elif studRec.objects.filter(username=username).exists():
+                messages.warning(request, 'A student with this username already exists.')
             else:
                 student = form.save(commit=False)
                 # Set the status to 'Pending'
@@ -101,6 +174,7 @@ def student_register(request):
                 # Save to PendingRequests, including email and password
                 PendingRequests.objects.create(
                     student_id=student.student_id,
+                    username=student.username,
                     first_name=student.first_name,
                     middle_name=student.middle_name,
                     last_name=student.last_name,
@@ -112,13 +186,14 @@ def student_register(request):
                     password=make_password(student.password)  # Include hashed password
                 )
                 messages.success(request, 'Student record created successfully and is now pending approval!')
-                return redirect('stud-login')  # Redirect to a login page or relevant page
+                return redirect('unified-login')  # Redirect to a login page or relevant page
         else:
             messages.warning(request, 'Please correct the errors below.')
     else:
         form = StudRecForm()
 
     return render(request, 'webapp/student-register.html', {'form': form})
+
 
 
 @csrf_exempt
@@ -207,7 +282,7 @@ def home(request):
 #Students logs
 
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def view_student_logs(request, student_id):
     # Retrieve the student by their student_id
     student = get_object_or_404(studRec, student_id=student_id)
@@ -276,43 +351,43 @@ def view_student_logs(request, student_id):
 
 #Login a admin
 
-def login(request):
-    if request.session.get('student_id'):
-        return redirect('stud-dash')
-    form = LoginForm()
+# def osds_login(request):
+#     if request.session.get('student_id'):
+#         return redirect('stud-dash')
+#     form = LoginForm()
 
-    if request.method == "POST":
-        form = LoginForm(data=request.POST)
+#     if request.method == "POST":
+#         form = LoginForm(data=request.POST)
 
-        if form.is_valid():
-            username = request.POST.get('username')
-            password = request.POST.get('password')
+#         if form.is_valid():
+#             username = request.POST.get('username')
+#             password = request.POST.get('password')
 
-            user = authenticate(request, username=username, password=password)
+#             user = authenticate(request, username=username, password=password)
 
-            if user is not None:
-                auth_login(request, user)
+#             if user is not None:
+#                 auth_login(request, user)
                 
-                # Fetch the user's profile to determine user type
-                try:
-                    user_profile = UserProfile.objects.get(user=user)
-                    request.session['user_type'] = user_profile.user_type
-                except UserProfile.DoesNotExist:
-                    request.session['user_type'] = 'Unknown'  # or handle as needed
+#                 # Fetch the user's profile to determine user type
+#                 try:
+#                     user_profile = UserProfile.objects.get(user=user)
+#                     request.session['user_type'] = user_profile.user_type
+#                 except UserProfile.DoesNotExist:
+#                     request.session['user_type'] = 'Unknown'  # or handle as needed
 
-                messages.success(request, "Logged in successfully.")
-                return redirect('dashboard-real')
-            else:
-                messages.warning(request, "Invalid username or password.")
-        else:
-            messages.warning(request, "Invalid username or password.")
+#                 messages.success(request, "Logged in successfully.")
+#                 return redirect('dashboard-real')
+#             else:
+#                 messages.warning(request, "Invalid username or password.")
+#         else:
+#             messages.warning(request, "Invalid username or password.")
 
-    context = {'form': form}
-    return render(request, 'webapp/login.html', context)
+#     context = {'form': form}
+#     return render(request, 'webapp/login.html', context)
 
 
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def dashboard_real(request):
     
     recent_students = studRec.objects.all().order_by('-creation_date')[:3]
@@ -334,46 +409,46 @@ def student_dashboard(request):
     return render(request, 'webapp/stud-dash.html')
 
 
-def student_login(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard-real')
+# def student_login(request):
+#     if request.user.is_authenticated:
+#         return redirect('dashboard-real')
 
-    if request.method == 'POST':
-        # Log out any currently logged-in student
-        if request.session.get('student_id'):
-            # Clear all session data to ensure only one student is logged in at a time
-            request.session.flush()
+#     if request.method == 'POST':
+#         # Log out any currently logged-in student
+#         if request.session.get('student_id'):
+#             # Clear all session data to ensure only one student is logged in at a time
+#             request.session.flush()
 
-        student_id = request.POST.get('student_id')
-        password = request.POST.get('password')
-        try:
-            student = studRec.objects.get(student_id=student_id)
+#         student_id = request.POST.get('student_id')
+#         password = request.POST.get('password')
+#         try:
+#             student = studRec.objects.get(student_id=student_id)
             
-            # Verify password
-            if not check_password(password, student.password):
-                messages.warning(request, 'Invalid password')
-                return render(request, 'webapp/student-login.html')
+#             # Verify password
+#             if not check_password(password, student.password):
+#                 messages.warning(request, 'Invalid password')
+#                 return render(request, 'webapp/student-login.html')
 
-            # Log the student in
-            request.session['user_type'] = 'student'
-            request.session['student_id'] = student.student_id  # Save student ID in session
-            request.session['student_name'] = f"{student.first_name} {student.last_name}"  # Save student name in session
-            if student.picture:
-                request.session['student_picture'] = student.picture.url  # Save student picture URL in session
-            else:
-                request.session['student_picture'] = None  # Handle case with no picture
+#             # Log the student in
+#             request.session['user_type'] = 'student'
+#             request.session['student_id'] = student.student_id  # Save student ID in session
+#             request.session['student_name'] = f"{student.first_name} {student.last_name}"  # Save student name in session
+#             if student.picture:
+#                 request.session['student_picture'] = student.picture.url  # Save student picture URL in session
+#             else:
+#                 request.session['student_picture'] = None  # Handle case with no picture
 
-            messages.success(request, "Logged in successfully.")
-            return redirect(reverse('stud-dash'))
-        except studRec.DoesNotExist:
-            # If student ID does not match, show an error message
-            messages.warning(request, 'Invalid student ID')
-    return render(request, 'webapp/student-login.html')
+#             messages.success(request, "Logged in successfully.")
+#             return redirect(reverse('stud-dash'))
+#         except studRec.DoesNotExist:
+#             # If student ID does not match, show an error message
+#             messages.warning(request, 'Invalid student ID')
+#     return render(request, 'webapp/student-login.html')
 
 
 #dashboard/SEARCH
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def dashboard(request):
     # Fetch all available courses and majors for dropdowns
     courses = studRec.objects.values_list('course', flat=True).distinct()
@@ -430,7 +505,7 @@ def dashboard(request):
     }
     return render(request, 'webapp/dashboard.html', context=context)
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def search_records(request):
     query = request.GET.get('q', '')
     course = request.GET.get('course', '')
@@ -473,7 +548,7 @@ def search_records(request):
 
 # Create a record
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def create_record(request):
     if request.method == 'POST':
         form = CreateRecordForm(request.POST, request.FILES)
@@ -512,7 +587,7 @@ def create_record(request):
 
         
 # Update Record
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def update_record(request, pk):
     record = get_object_or_404(studRec, pk=pk)  # Retrieve the record using the primary key (pk)
     
@@ -545,7 +620,7 @@ def update_record(request, pk):
 # View a record
 
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def view_record(request, pk):
         
         all_records = studRec.objects.get(id=pk)
@@ -557,7 +632,7 @@ def view_record(request, pk):
 
 #Delete a record 
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def delete_record(request, pk):
     if request.method == 'POST':
         record = get_object_or_404(studRec, id=pk)
@@ -570,7 +645,7 @@ def delete_record(request, pk):
 
 # View admin lists
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def view_admin(request):
     # Retrieve all users with their profiles
     users_list = User.objects.select_related('userprofile').all()
@@ -655,7 +730,7 @@ def update_profile(request):
     return redirect('dashboard')
 
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def prompt(request):
       recent_logs = AttendanceLog.objects.order_by('-time')[:2]
       context = {
@@ -687,33 +762,33 @@ def recent_logs(request):
 def logout(request):
         auth.logout(request)
         messages.success(request, "Logged out.")
-        return redirect('login')
+        return redirect('unified-login')
 
 def student_logout(request):
         auth.logout(request)
         messages.success(request, "Logged out.")
-        return redirect('stud-login')
+        return redirect('unified-login')
 
 def head_logout(request):
         auth.logout(request)
         messages.success(request, "Logged out.")
-        return redirect('head-login')
+        return redirect('unified-login')
             
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def block_student(request, pk):
     student = get_object_or_404(studRec, pk=pk)
     student.status = 'Inactive'
-    messages.success(request, "Student Blocked. ")
+   
     student.save()
 
     return JsonResponse({'status': 'success', 'message': 'Student blocked'})
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def unblock_student(request, pk):
     student = get_object_or_404(studRec, pk=pk)
     student.status = 'Active'
     student.save()
-    messages.success(request, "Student Unblocked. ")
+   
     return JsonResponse({'status': 'success', 'message': 'Student unblocked'})
 
 
@@ -728,6 +803,7 @@ def create_report(request):
             report = form.save(commit=False)
             report.student_id = request.session.get('student_id')
             report.save()
+            messages.success(request,'Report Created')
             return redirect('create-report')  # Redirect to the same page or another page
     else:
         form = ReportForm()
@@ -741,7 +817,7 @@ def create_report(request):
         'reports': reports,
     })
 
-@login_required(login_url='login')
+@login_required(login_url='unified-login')
 def student_reports(request):
     # Order reports by 'date_submitted' in descending order
     reports = Report.objects.all().order_by('-date_submitted')
@@ -864,6 +940,7 @@ def approve_request(request, request_id):
         picture=pending_request.picture,
         email=pending_request.email,       # Transfer email
         password=pending_request.password, # Transfer password (make sure it's already hashed)
+        username=pending_request.username,
         status='Active'  # Set status to 'Active' when moving to studRec
     )
     # Delete from PendingRequests
@@ -962,23 +1039,7 @@ def all_logs(request):
     # Retrieve all logs based on filters
     all_logs = AttendanceLog.objects.filter(filters)
 
-    # Set up pagination
-    items_per_page = 10  # Number of logs per page
-    paginator = Paginator(all_logs, items_per_page)
-    page_number = request.GET.get('page')
-
-    try:
-        logs = paginator.page(page_number)
-    except PageNotAnInteger:
-        logs = paginator.page(1)
-    except EmptyPage:
-        logs = paginator.page(paginator.num_pages)
-    except ZeroDivisionError:
-        logs = paginator.page(1)  # Default to the first page if an error occurs
-
-    
-
-    # Pass course and major choices for the filter dropdowns
+  # Pass course and major choices for the filter dropdowns
     course_choices = [
         ('BSMT', 'Bachelor of Science in Marine Transportation'),
         ('BSMar-E', 'Bachelor of Science in Marine Engineering'),
@@ -1016,10 +1077,11 @@ def all_logs(request):
     ]
 
     return render(request, 'webapp/all-logs.html', {
-        'logs': logs,
+        'logs': all_logs,  # Pass all logs without pagination
         'course_choices': course_choices,
-        'major_choices': major_choices,  # Ensure this is included
+        'major_choices': major_choices,
     })
+
 
 
 def student_details(request, student_id):
@@ -1037,6 +1099,7 @@ def student_details(request, student_id):
             'picture': student.picture.url if student.picture else None,
             'creation_date': student.creation_date.strftime('%Y-%m-%d'),
             'status': student.status,
+            'username': student.username,
         }
         return JsonResponse(data)
     except PendingRequests.DoesNotExist:

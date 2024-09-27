@@ -79,6 +79,7 @@ class CreateRecordForm(forms.ModelForm):
             'picture',
             'email',      # Add email field
             'password',   # Add password field
+            'username',  
         ]
 
     def __init__(self, *args, **kwargs):
@@ -120,13 +121,14 @@ class CreateRecordForm(forms.ModelForm):
         self.fields['password'].label = ""
         self.fields['password'].widget = forms.PasswordInput(attrs={'placeholder': 'Enter Password'})  # Use PasswordInput for security
 
-
-
+        self.fields['username'].required = True  # Set this according to your requirements
+        self.fields['username'].label = ""
+        self.fields['username'].widget.attrs.update({'placeholder': 'Enter Username'})
 
 
 class StudRecForm(forms.ModelForm):
     class Meta:
-        model = studRec  # Assuming 'PendingRequests' is the model for the form
+        model = studRec  
         fields = [
             'student_id',
             'first_name',
@@ -138,6 +140,7 @@ class StudRecForm(forms.ModelForm):
             'picture',
             'email',      # Include the email field
             'password',   # Include the password field
+            'username',
         ]
         widgets = {
             'password': forms.PasswordInput(),  # Use a PasswordInput widget for password
@@ -186,6 +189,13 @@ class StudRecForm(forms.ModelForm):
         self.fields['password'].label = ""
         self.fields['password'].widget.attrs.update({'placeholder': 'Enter Password'})
 
+        self.fields['username'].required = True  # Set this according to your requirements
+        self.fields['username'].label = ""
+        self.fields['username'].widget.attrs.update({'placeholder': 'Enter Username'})
+
+
+
+
 
 # Form for updating an existing record
 class UpdateRecordForm(forms.ModelForm):
@@ -201,6 +211,8 @@ class UpdateRecordForm(forms.ModelForm):
             'major',
             'rfid_number',
             'picture',
+            'email',    # New field
+            'username', # New field
         ]
 
     def __init__(self, *args, **kwargs):
@@ -231,6 +243,21 @@ class UpdateRecordForm(forms.ModelForm):
         self.fields['rfid_number'].widget.attrs.update({'placeholder': 'Enter RFID Number'})
         self.fields['picture'].required = True
         self.fields['picture'].label = ""
+          # Email (New field)
+        self.fields['email'].required = True
+        self.fields['email'].label = ""
+        self.fields['email'].widget.attrs.update({
+            'placeholder': 'Enter Email Address',
+            'type': 'email',
+        })
+
+        # Username (New field)
+        self.fields['username'].required = True
+        self.fields['username'].label = ""
+        self.fields['username'].widget.attrs.update({
+            'placeholder': 'Enter Username'
+        })
+
 class ReportForm(forms.ModelForm):
     class Meta:
         model = Report

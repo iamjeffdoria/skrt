@@ -51,6 +51,10 @@
                 <br><br>
                 <!-- Form Fields with Icons in Labels -->
                 
+                <label for="id_username"><i class="fa fa-user" aria-hidden="true"></i> Username</label>
+                {{ form.username|as_crispy_field }}
+
+                
                 <label for="id_rfid_number"><i class="fa fa-rss" aria-hidden="true"></i> RFID Number</label>
                 {{ form.rfid_number|as_crispy_field }}
               

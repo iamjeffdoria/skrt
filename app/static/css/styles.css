@@ -13,7 +13,7 @@ body {
     border-radius: 5px;
     border: 3px solid #ccc;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-    margin-top: 10%;
+    margin-top: 5%;
 }
 
 .form-layout {
@@ -187,15 +187,16 @@ body {
 .unblock-link:hover {
     color: white;
 }
-
 .alert {
     position: fixed;
-    top: 7%;
+    top: 10%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Offset by half the width and height */
     z-index: 1001;
     transition: left 0.25s ease-in-out;
-    width: 300px;
-    left: 55%;
+    width: 300px; /* Adjust as needed */
 }
+
 
 .hidden {
     display: none;

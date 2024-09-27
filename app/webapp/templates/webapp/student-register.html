@@ -97,6 +97,9 @@
 
                 <br><br>
                 
+                <label for="id_username"><i class="fa fa-user" aria-hidden="true"></i> Username</label>
+                {{ form.username|as_crispy_field }}
+
                 <label for="id_first_name"><i class="fa fa-user" aria-hidden="true"></i> First Name</label>
                 {{ form.first_name|as_crispy_field }}
 
@@ -140,7 +143,7 @@
         
         <!-- Login Link -->
         <div class="login-link">
-            <p>Already have an account? <a href="{% url 'stud-login' %}">Login</a></p>
+            <p>Already have an account? <a href="{% url 'unified-login' %}">Login</a></p>
         </div>
     </form>
 </div>

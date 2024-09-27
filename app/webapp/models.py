@@ -123,6 +123,7 @@ class studRec(models.Model):
     # New fields
     email = models.EmailField(validators=[EmailValidator()], unique=True, blank=True, null=True)
     password = models.CharField(max_length=128, blank=True, null=True)
+    username = models.CharField(max_length=150, default='default_username') 
 
     def __str__(self):
         return f"{self.first_name} {self.middle_name if self.middle_name else ''} {self.last_name} {self.suffix if self.suffix else ''}"
@@ -156,6 +157,7 @@ class PendingRequests(models.Model):
     # New fields
     email = models.EmailField(validators=[EmailValidator()], unique=True, blank=True, null=True)
     password = models.CharField(max_length=128, blank=True, null=True)
+    username = models.CharField(max_length=150, default='default_username') 
 
     def __str__(self):
         return f"{self.first_name} {self.middle_name if self.middle_name else ''} {self.last_name} {self.suffix if self.suffix else ''}"

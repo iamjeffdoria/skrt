@@ -1,88 +1,203 @@
 {% extends 'webapp/base.html' %}
 
 {% block content %}
-
-<!-- Back button to dashboard -->
-<!-- <a href="{% url 'dashboard' %}" class="btn btn-outline-dark">
-    <i class="fa-solid fa-arrow-right fa-flip-horizontal fa-lg"></i>
-</a>  -->
 <br><br>
-<div class="card">
-    <h5 class="text-center">
-        <strong>
-            
-            &nbsp;
-            {{ record.first_name }}
-            {% if record.middle_name %}
-                {{ record.middle_name }}
-            {% endif %}
-            {{ record.last_name }}
-            {% if record.suffix %}
-                {{ record.suffix }}
-            {% endif %}
-        </strong>
-    </h5>
-    <hr>
-    <div class="form-check form-switch block-switch">
-        <button class="btn btn-outline-dark" type="button" id="blockDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 40px;">
-            <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
-        </button>
-        <div class="dropdown-menu" aria-labelledby="blockDropdown">
-            {% if record.status == 'Active' %}
-            <a class="dropdown-item block-link" href="#" onclick="showBlockConfirmation('{{ record.id }}')" title="Block loss RFID Card."> <i class="fa fa-ban" aria-hidden="true"></i> &nbsp; Block</a>
-            {% endif %}
-            {% if record.status == 'Inactive' %}
-            <a class="dropdown-item unblock-link" href="#" onclick="updateStatus('{{ record.id }}', 'unblock')" title="Unblock Student."><ion-icon name="remove-circle-outline"></ion-icon> &nbsp; Unblock</a>
-            {% endif %}
-            <a class="dropdown-item" href="#"><ion-icon name="hourglass-outline"></ion-icon> &nbsp; Set expiration</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#"><ion-icon name="ellipsis-horizontal-outline"></ion-icon> &nbsp; Others...</a>
-        </div>
-    </div>
-
-    <br>
-
-    <!-- Centering container -->
-    <div class="center-container">
-        <div class="image-container">
-            <img src="{{ record.picture.url }}" alt="Student Picture" 
-                style="width: 100%; height: 100%; object-fit: cover;" 
-                title="Student Picture">
-        </div>
-
-        <div class="card-body">
-            <p><strong> Status: </strong> 
-                <span class="{% if record.status == 'Active' %}text-success{% else %}text-danger{% endif %}" style="text-align: left;">
-                    <strong>
-                        {{ record.status }}
-                    </strong>
-                </span>
-                </p>        
-            <p><strong> RFID Issue Date: </strong> {{ record.creation_date }}</p>
-            <p><strong> Student ID: </strong> {{ record.student_id }}</p>  
-            <p><strong> Email: </strong> {{ record.email }}</p>  
-            <p><strong> Course: </strong> {{ record.course }}</p>
-            <p><strong> Major: </strong> {{ record.major }}</p>
-            <p><strong> RFID Number: </strong> {{ record.rfid_number }}</p>
+<div class="container card p-4 shadow-sm" style="max-width: 1000px; width: 100%;">
+    <div class="row align-items-center">
+  <!-- Profile Picture -->
+  <div class="col-md-4 text-center">
+    <div class="position-relative">
+        <img src="{{ record.picture.url }}" alt="Student Picture" 
+             class="img-fluid shadow-lg border border-dark" 
+             style="width: 100%; max-width: 180px; height: 180px; object-fit: cover; border-width: 3px;" 
+             title="Student Picture">
+        <div class="mt-3">
+            <h5 class="mb-0 text-uppercase font-weight-bold" style="font-family: 'Poppins', sans-serif;">
+                {{ record.first_name }} {{ record.middle_name }} {{ record.last_name }}
+                {% if record.suffix %} {{ record.suffix }} {% endif %}
+            </h5>
         </div>
     </div>
 </div>
 
-<br>
 
-<div class="buttons" id="actionButtons" style="display: none;">
-    <a href="{% url 'update-record' record.id %}" class="btn btn-info">
-        <i class="fa fa-pencil" aria-hidden="true"></i> &nbsp; Update
-    </a> &nbsp;
-    <a href="{% url 'student-logs' record.student_id %}" class="btn btn-success">
-        <i class="fa fa-eye" aria-hidden="true"></i>&nbsp; View Logs
-    </a> &nbsp;
-    <a href="#" class="btn btn-danger" onclick="showDeleteConfirmation('{{ record.id }}')">
-        <i class="fa fa-trash" aria-hidden="true"></i> &nbsp; Delete
-    </a>
+
+        <!-- Information on the right -->
+        <div class="col-md-8">
+            <div class="d-flex justify-content-end">
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="blockDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-ellipsis-h"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="blockDropdown">
+                        {% if record.status == 'Active' %}
+                        <a class="dropdown-item" href="#" onclick="showBlockConfirmation('{{ record.id }}')">
+                            <i class="fa fa-ban"></i> &nbsp; Block
+                        </a>
+                        {% endif %}
+                        {% if record.status == 'Inactive' %}
+                        <a class="dropdown-item" href="#" onclick="updateStatus('{{ record.id }}', 'unblock')">
+                            <i class="fa fa-unlock"></i> &nbsp; Unblock
+                        </a>
+                        {% endif %}
+                        <a class="dropdown-item" href="#" onclick="showExpirationModal('{{ record.id }}')">
+                            <i class="fa fa-clock"></i> &nbsp; Set expiration
+                        </a>
+                        <a class="dropdown-item" href="{% url 'update-record' record.id %}">
+                            <i class="fa fa-pencil"></i> &nbsp; Update
+                        </a>
+                        <a class="dropdown-item" href="{% url 'student-logs' record.student_id %}">
+                            <i class="fa fa-eye"></i>&nbsp; View Logs
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" onclick="showDeleteConfirmation('{{ record.id }}')">
+                            <i class="fa fa-trash"></i> &nbsp; Delete
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"><i class="fa fa-ellipsis-h"></i> &nbsp; Others...</a>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-borderless mt-3">
+                <tbody>
+                    <tr>
+                        <td class="font-weight-bold text-dark bg-light">Status:</td>
+                        <td>
+                            <span class="{% if record.status == 'Active' %}text-success{% else %}text-danger{% endif %}">
+                                <strong>{{ record.status }}</strong>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-dark bg-light">RFID Issue Date:</td>
+                        <td>{{ record.creation_date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-dark bg-light">Student ID:</td>
+                        <td>{{ record.student_id }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-dark bg-light">Username:</td>
+                        <td>{{ record.username }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-dark bg-light ">Email:</td>
+                        <td>{{ record.email }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-dark bg-light">Course:</td>
+                        <td>{{ record.course }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-dark bg-light">Major:</td>
+                        <td>{{ record.major }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-dark bg-light">RFID Number:</td>
+                        <td>{{ record.rfid_number }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+  <!-- Charts Section -->
+<div class="mt-4">
+    <div class="row justify-content-center">
+        <!-- Histogram -->
+        <div class="col-md-6 mb-3">
+            <h5 class="text-center">Histogram of Attendance</h5>
+            <canvas id="attendanceHistogram" width="600" height="400" style="max-width: 100%;"></canvas>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="col-md-4 mb-3">
+            <h5 class="text-center">Attendance Status Distribution</h5>
+            <canvas id="attendancePieChart" width="400" height="300" style="max-width: 100%;"></canvas>
+        </div>
+    </div>
 </div>
+
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+    // Example data for the histogram
+   // Example data for the histogram
+   const attendanceData = {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        datasets: [{
+            label: 'Attendance',
+            data: [12, 19, 3, 5, 2],
+            backgroundColor: 'rgba(0, 123, 255, 1)',  // More intense blue
+            borderColor: 'rgba(0, 123, 255, 1)',      // Same intensity for the border
+            borderWidth: 2                            // Thicker border
+        }]
+    };
+
+    const ctxHistogram = document.getElementById('attendanceHistogram').getContext('2d');
+    const attendanceHistogram = new Chart(ctxHistogram, {
+        type: 'bar',
+        data: attendanceData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Attendances'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Days of the Week'
+                    }
+                }
+            }
+        }
+    });
+
+    // Example data for the pie chart with intense colors
+    const pieData = {
+        labels: ['Present', 'Absent', 'Late'],
+        datasets: [{
+            label: 'Attendance Status',
+            data: [60, 30, 10],
+            backgroundColor: [
+                'rgba(0, 123, 255, 1)', // More intense blue
+                'rgba(255, 0, 0, 1)',   // Very red
+                'rgba(255, 193, 7, 1)'  // Intense yellow
+            ],
+            borderColor: [
+                'rgba(0, 123, 255, 1)', // Matching the intense blue
+                'rgba(255, 0, 0, 1)',   // Matching intense red
+                'rgba(255, 193, 7, 1)'  // Matching yellow
+            ],
+            borderWidth: 2              // Thicker border
+        }]
+    };
+
+    const ctxPie = document.getElementById('attendancePieChart').getContext('2d');
+    const attendancePieChart = new Chart(ctxPie, {
+        type: 'pie',
+        data: pieData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Attendance Status Distribution'
+                }
+            }
+        }
+    });
+
     // Update the student's status (block/unblock)
     function updateStatus(studentId, action) {
         const url = action === 'block' ? `/block-student/${studentId}/` : `/unblock-student/${studentId}/`;
@@ -102,83 +217,38 @@
             return response.json();
         })
         .then(data => {
-            if (data.status === 'success') {
-                location.reload();  // Reload the page to see the updated status
-            } else {
-                alert('Error: ' + data.message);
-            }
+            // Handle the response data as needed
+            alert(data.message);
+            location.reload(); // Reload the page to see changes
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
     }
 
-    // Show block confirmation using SweetAlert
+    // Show confirmation modal before blocking a student
     function showBlockConfirmation(studentId) {
-        Swal.fire({
-            title: 'Confirm Block',
-            text: 'Are you sure you want to block this student?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Block',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                updateStatus(studentId, 'block');
-            }
-        });
-    }
-     // Show delete confirmation using SweetAlert
-     function showDeleteConfirmation(recordId) {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                deleteRecord(recordId);
-            }
-        });
-    }
-
-    // Perform the deletion if confirmed
-    function deleteRecord(recordId) {
-        fetch(`/delete-record/${recordId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                location.href = data.redirect_url;  // Redirect to the dashboard
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-
-    // Display action buttons if the student's status is 'Active'
-    document.addEventListener('DOMContentLoaded', function() {
-        const status = "{{ record.status }}";
-        if (status === 'Active') {
-            document.getElementById('actionButtons').style.display = 'block';
+        const confirmBlock = confirm("Are you sure you want to block this student?");
+        if (confirmBlock) {
+            updateStatus(studentId, 'block');
         }
-    });
-</script>
+    }
 
+    // Show confirmation modal before deleting a student record
+    function showDeleteConfirmation(studentId) {
+        const confirmDelete = confirm("Are you sure you want to delete this record?");
+        if (confirmDelete) {
+            // Add the delete logic here
+            alert(`Record ${studentId} deleted.`);
+            location.reload(); // Reload the page to see changes
+        }
+    }
+
+    // Show modal for setting expiration
+    function showExpirationModal(studentId) {
+        // Your modal logic here
+        alert(`Setting expiration for student ${studentId}`);
+    }
+</script>
 
 {% endblock %}

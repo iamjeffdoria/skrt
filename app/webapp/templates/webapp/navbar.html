@@ -802,18 +802,25 @@
                         <li class="nav-item">
                             <a href="#about" class="nav-link" id="about-link">About Us</a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{% url 'unified-login' %}" class="nav-link" id="about-link">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'student-register' %}" class="nav-link" id="about-link">Student Register</a>
+                        </li>
                         {% endif %}
-                        
+<!--                         
                         <li class="nav-item">
                             <a href="#" class="nav-link" id="auth-dropdown">Auth
                                 <ion-icon name="chevron-down-outline"></ion-icon>
                             </a>
                             <ul class="dropdown">
-                                <li><a href="{% url 'login' %}" class="dropdown-link">OSDS Login</a></li>
-                                <li><a href="{% url 'head-login' %}" class="dropdown-link">Head of Security Login</a></li>
-                                <li><a href="{% url 'stud-login' %}" class="dropdown-link">Students Login</a></li>
+                              
+                            
+                                <li><a href="{% url 'unified-login' %}" class="dropdown-link">Unified Login</a></li>
+                             
                             </ul>
-                        </li>
+                        </li> -->
                     </ul>
                 </nav>
                 <button id="toggle-btn">

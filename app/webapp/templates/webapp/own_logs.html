@@ -120,7 +120,9 @@
 
 <div class="container">
     <div class="student-info mb-3">
-        <p><i class="fas fa-id-badge"></i><strong>Student ID:</strong> {{ student.student_id }}</p>
+        <p><i class="fas fa-id-badge"></i><strong>Student ID:</strong> {{ request.session.student_id }}</p>  <!-- Use request.session.student_id -->
+        <p><i class="fas fa-user"></i><strong>Name:</strong> {{ request.session.student_name }}</p>  <!-- Display the student name -->
+
         <p><i class="fas fa-sign-in-alt"></i><strong>Total Login:</strong> {{ total_login }}</p>
         <p><i class="fas fa-sign-out-alt"></i><strong>Total Logout:</strong> {{ total_logout }}</p>
     </div>
