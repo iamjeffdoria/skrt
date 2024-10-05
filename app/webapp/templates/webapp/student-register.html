@@ -2,175 +2,274 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .input-group-text {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .submit-btn {
+            width: 100%;
+            background-color: #0d6efd;
+            color: white;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .preview-container {
+            width: 192px;
+            height: 192px;
+            border: 2px dashed #0d6efd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            position: relative;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #placeholderText {
+            font-size: 14px;
+            color: #6c757d;
+            z-index: 1;
+        }
+        .input-group {
+            margin-bottom: 15px; /* Space between input groups */
+        }
+        .form-label i {
+            margin-right: 8px;
+            color: #0d6efd;
+        }
+        .submit-btn i {
+            margin-right: 10px;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+        }
+        .availability-message {
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
 
-<link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.min.css">
-<script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
-<style>
-    .hidden {
-        display: none;
-    }
-    .visible {
-        display: block;
-    }
-    .form-layout {
-        background-color: #ffffff; /* White background */
-        color: #343a40; /* Dark gray text */
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Lighter shadow for a soft effect */
-    }
-    .image-upload-frame {
-        border: 2px dashed #adb5bd; /* Light gray border */
-        padding: 10px;
-        text-align: center;
-        width: 180px;
-        height: 180px;
-        margin-bottom: 20px;
-        background-color: #f8f9fa; /* Very light gray background */
-        color: #6c757d; /* Slightly darker gray text */
-    }
-    .image-upload-frame img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: none;
-    }
-    .image-upload-frame p {
-        margin-top: 50px;
-        color: #6c757d; /* Slightly darker gray text */
-    }
-    .btn-outline-primary {
-        margin-top: 10px;
-        border-color: #007bff; /* Blue border */
-        color: white; /* Blue text */
-    }
-    .btn-outline-primary:hover {
-        background-color: white; /* Blue background on hover */
-        color: #007bff; /* White text on hover */
-    }
-    .btn-primary {
-        width: 100%;
-        padding: 10px;
-        background-color: #007bff; /* Primary blue color */
-        border: none;
-        color: #ffffff; /* White text */
-    }
-    .btn-primary:hover {
-        background-color: #0056b3; /* Darker blue on hover */
-    }
-    .login-link {
-        display: block;
-        margin-top: 15px;
-        text-align: center;
-        font-size: 0.9rem;
-    }
-    .login-link a {
-        color: #007bff; /* Primary blue color */
-        text-decoration: none;
-    }
-    .login-link a:hover {
-        text-decoration: underline;
-    }
-</style>
-
-<div class="container bg-light shadow-md p-5 form-layout form-create">
-    <h3><i class="fa fa-address-book" aria-hidden="true"></i> Student Registration</h3>
-    <hr>
-
-    <form method="POST" enctype="multipart/form-data" autocomplete="off">
-        {% csrf_token %}
-
-        <div class="row">
-            <!-- Left Column -->
-            <div class="col-md-6">
-                <!-- Image Upload Frame -->
-                <div class="image-upload-frame">
-                    <img id="image-preview" alt="Image Preview" />
-                    <p id="upload-guidance">Upload 2x2 Image</p>
+<div class="container">
+    <div class="form-container mt-2">
+        <h2 class="form-title"><i class="fas fa-user-plus"></i> Student Registration</h2>
+        <form action="#" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <!-- Student ID -->
+                <div class="col-md-6">
+                    <label for="studentId" class="form-label"><i class="fas fa-id-badge"></i> Student ID</label>
+                    <div style="width: 250px;">
+                        {{ form.student_id|as_crispy_field }}
+                        <span id="studentIdError" class="error-message"></span>
+                        <span id="studentIdAvailability" class="availability-message"></span>
+                    </div>
                 </div>
 
-                <!-- File Input for Picture -->
-                <label for="id_picture" class="btn btn-outline-primary" style="background-color: #303c66;">
-                    <i class="fa fa-camera" aria-hidden="true"></i> &nbsp; Upload Picture
-                </label>
-                <input id="id_picture" type="file" name="picture" class="hidden">
+                <!-- Username -->
+                <div class="col-md-6">
+                    <label for="username" class="form-label"><i class="fas fa-user"></i> Username</label>
+                    <div style="width: 250px;">
+                        {{ form.username|as_crispy_field }}
+                        <span id="usernameError" class="error-message"></span>
+                        <span id="usernameAvailability" class="availability-message"></span>
+                    </div>
+                </div>
 
-                <br><br>
-                
-                <label for="id_username"><i class="fa fa-user" aria-hidden="true"></i> Username</label>
-                {{ form.username|as_crispy_field }}
+                <!-- First Name -->
+                <div class="col-md-6">
+                    <label for="firstName" class="form-label"><i class="fas fa-signature"></i> First Name</label>
+                    <div style="width: 250px;">
+                        {{ form.first_name|as_crispy_field }}
+                    </div>
+                </div>
 
-                <label for="id_first_name"><i class="fa fa-user" aria-hidden="true"></i> First Name</label>
-                {{ form.first_name|as_crispy_field }}
+                <!-- Middle Name -->
+                <div class="col-md-6">
+                    <label for="middleName" class="form-label"><i class="fas fa-signature"></i> Middle Name</label>
+                    <div style="width: 250px;">
+                        {{ form.middle_name|as_crispy_field }}
+                    </div>
+                </div>
 
-                <label for="id_middle_name"><i class="fa fa-user" aria-hidden="true"></i> Middle Name</label>
-                {{ form.middle_name|as_crispy_field }}
+                <!-- Last Name -->
+                <div class="col-md-6">
+                    <label for="lastName" class="form-label"><i class="fas fa-signature"></i> Last Name</label>
+                    <div style="width: 250px;">
+                        {{ form.last_name|as_crispy_field }}
+                    </div>
+                </div>
 
-                <label for="id_last_name"><i class="fa fa-user" aria-hidden="true"></i> Last Name</label>
-                {{ form.last_name|as_crispy_field }}
-                
-                <label for="id_suffix"><i class="fa fa-user" aria-hidden="true"></i> Suffix</label>
-                {{ form.suffix|as_crispy_field }}
+                <!-- Suffix -->
+                <div class="col-md-6">
+                    <label for="suffix" class="form-label"><i class="fas fa-user-tag"></i> Suffix</label>
+                    <div style="width: 250px;">
+                        {{ form.suffix|as_crispy_field }}
+                    </div>
+                </div>
 
+                <!-- Email -->
+                <div class="col-md-6">
+                    <label for="email" class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                    <div style="width: 250px;">
+                        {{ form.email|as_crispy_field }}
+                        <span id="emailError" class="error-message"></span>
+                        <span id="emailAvailability" class="availability-message"></span>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="col-md-6">
+                    <label for="password" class="form-label"><i class="fas fa-lock"></i> Password</label>
+                    <div style="width: 250px;">
+                        {{ form.password|as_crispy_field }}
+                    </div>
+                </div>
+
+                <!-- Course Dropdown -->
+                <div class="col-md-6">
+                    <label for="studentCourse" class="form-label"><i class="fas fa-graduation-cap"></i> Course</label>
+                    <div style="width: 250px;">
+                        {{ form.course|as_crispy_field }}
+                    </div>
+                </div>
+
+                <!-- Major Dropdown -->
+                <div class="col-md-6">
+                    <label for="studentMajor" class="form-label"><i class="fas fa-book"></i> Major</label>
+                    <div style="width: 250px;">
+                        {{ form.major|as_crispy_field }}
+                    </div>
+                </div>
+
+                <!-- Upload Profile Picture -->
+                <div class="col-md-6">
+                    <label for="studentPicture" class="form-label"><i class="fas fa-camera"></i> Profile Picture</label>
+                    <div style="width: 250px;">
+                        {{ form.picture|as_crispy_field }}
+                    </div>
+                </div>
             </div>
 
-            <!-- Right Column -->
-            <div class="col-md-6">
-              
-                <label for="id_course"><i class="fa fa-graduation-cap" aria-hidden="true"></i> Course</label>
-                {{ form.course|as_crispy_field }}
-                
-                <label for="id_major"><i class="fa fa-cogs" aria-hidden="true"></i> Major</label>
-                {{ form.major|as_crispy_field }}
-                
-                <label for="id_student_id"><i class="fa fa-id-card" aria-hidden="true"></i> Student ID</label>
-                {{ form.student_id|as_crispy_field }}
-
-                <!-- Email Field -->
-                <label for="id_email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</label>
-                {{ form.email|as_crispy_field }}
-
-                <!-- Password Field -->
-                <label for="id_password"><i class="fa fa-lock" aria-hidden="true"></i> Password</label>
-                {{ form.password|as_crispy_field }}
+            <!-- Image Preview Container (2x2 inches) -->
+            <div class="preview-container" id="previewContainer">
+                <span id="placeholderText">No Image</span>
             </div>
-        </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary" style="background-color: #303c66;">
-            <i class="fa fa-paper-plane" aria-hidden="true"></i>&nbsp; Submit
-        </button>
-        
-        <!-- Login Link -->
-        <div class="login-link">
-            <p>Already have an account? <a href="{% url 'unified-login' %}">Login</a></p>
-        </div>
-    </form>
+            <!-- Submit Button -->
+            <button type="submit" class="btn submit-btn mt-3">
+                <i class="fas fa-paper-plane"></i> Submit Registration
+            </button>
+        </form>
+    </div>
 </div>
 
-<!-- JavaScript for Image Preview -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var fileInput = document.getElementById("id_picture");
-        var previewImage = document.getElementById("image-preview");
-        var textGuidance = document.getElementById("upload-guidance");
+    function previewImage() {
+        const fileInput = document.getElementById('id_picture');
+        const previewContainer = document.getElementById('previewContainer');
+        const placeholderText = document.getElementById('placeholderText');
 
-        fileInput.addEventListener("change", function() {
-            var file = fileInput.files[0];
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = "block";
-                    textGuidance.style.display = "none";
-                };
-                reader.readAsDataURL(file);
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                placeholderText.style.display = 'none';
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('preview-img');
+                previewContainer.innerHTML = '';
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            placeholderText.style.display = 'block';
+            previewContainer.innerHTML = '';
+        }
+    }
+
+    // Attach the image preview function to the file input change event
+    document.getElementById('id_picture').addEventListener('change', previewImage);
+
+   
+    function checkFieldAvailability(fieldName) {
+        const field = document.getElementById(`id_${fieldName}`);
+        const errorField = document.getElementById(`${fieldName}Error`);
+        const availabilityField = document.getElementById(`${fieldName}Availability`);
+
+        // Remove existing error message
+        errorField.textContent = '';
+        availabilityField.textContent = '';
+
+        if (field.value.trim() === '') {
+            return; // Skip check for empty fields
+        }
+
+        // Simulating AJAX call to check availability (replace with your actual AJAX logic)
+        setTimeout(() => {
+            const takenFields = {
+                'student_id': ['123', '456', '789'],
+                'username': ['user1', 'user2', 'user3'],
+                'email': ['email@example.com', 'test@example.com']
+            };
+
+            if (takenFields[fieldName].includes(field.value.trim())) {
+                errorField.textContent = `${fieldName.replace('_', ' ').toUpperCase()} is required.`;
+                availabilityField.textContent = 'Already taken!';
             } else {
-                previewImage.style.display = "none";
-                textGuidance.style.display = "block";
+                availabilityField.textContent = 'Available!';
             }
-        });
-    });
+        }, 500);
+    }
+
+    // Attach change event listeners to relevant fields
+    document.getElementById('id_student_id').addEventListener('change', () => checkFieldAvailability('student_id'));
+    document.getElementById('id_username').addEventListener('change', () => checkFieldAvailability('username'));
+    document.getElementById('id_email').addEventListener('change', () => checkFieldAvailability('email'));
 </script>
 
+</body>
+</html>
 {% endblock %}

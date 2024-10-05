@@ -135,14 +135,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 
-# Email settings for production
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
- # Use SMTP backend
-EMAIL_HOST = 'smtp.gmail.com'  # Gmail's SMTP server
+# For production, configure SMTP backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'zeusabadies139@gmail.com'  # Your Gmail address
-EMAIL_HOST_PASSWORD = 'zeusabadies123'  # App-specific password
+EMAIL_HOST_USER = 'jeffersondoria631@gmail.com'
+EMAIL_HOST_PASSWORD = 'bljc hxwm dnmi pwdt'
+DEFAULT_FROM_EMAIL = 'jeffersondoria631@gmail.com'
+
 
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session active after browser is closed

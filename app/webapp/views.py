@@ -44,7 +44,35 @@ from django.utils.dateparse import parse_date
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from .models import HeadOfSecurity
+from django.views import View
+from django.core.mail import send_mail
 
+
+
+def activate_account(request, student_id):
+    pending_request = get_object_or_404(PendingRequests, id=student_id)
+
+    # Move data from PendingRequests to studRec
+    studRec.objects.create(
+        student_id=pending_request.student_id,
+        first_name=pending_request.first_name,
+        middle_name=pending_request.middle_name,
+        last_name=pending_request.last_name,
+        suffix=pending_request.suffix,
+        course=pending_request.course,
+        major=pending_request.major,
+        picture=pending_request.picture,
+        email=pending_request.email,
+        password=pending_request.password,
+        username=pending_request.username,
+        status='Active'
+    )
+
+    # Delete from PendingRequests
+    pending_request.delete()
+
+    messages.success(request, 'Your account has been activated.')
+    return redirect('unified-login')  # Redirect to login page or dashboard
 
 
 def unified_login(request):
@@ -161,12 +189,21 @@ def student_register(request):
         if form.is_valid():
             student_id = form.cleaned_data.get('student_id')
             username = form.cleaned_data.get('username')
+            email = form.cleaned_data.get('email')
 
-            # Check if the student ID or username already exists
+            # Check if the student ID, username, or email already exists
             if studRec.objects.filter(student_id=student_id).exists():
                 messages.warning(request, 'A student with this ID already exists.')
+            elif PendingRequests.objects.filter(student_id=student_id).exists():
+                messages.warning(request, 'A pending request with this student ID already exists.')
             elif studRec.objects.filter(username=username).exists():
                 messages.warning(request, 'A student with this username already exists.')
+            elif PendingRequests.objects.filter(username=username).exists():
+                messages.warning(request, 'A pending request with this username already exists.')
+            elif studRec.objects.filter(email=email).exists():
+                messages.warning(request, 'A student with this email already exists.')
+            elif PendingRequests.objects.filter(email=email).exists():
+                messages.warning(request, 'A pending request with this email already exists.')
             else:
                 student = form.save(commit=False)
                 # Set the status to 'Pending'
@@ -193,7 +230,6 @@ def student_register(request):
         form = StudRecForm()
 
     return render(request, 'webapp/student-register.html', {'form': form})
-
 
 
 @csrf_exempt
@@ -406,7 +442,18 @@ def dashboard_real(request):
 
 
 def student_dashboard(request):
-    return render(request, 'webapp/stud-dash.html')
+
+    student_id = request.session.get('student_id')
+    
+    if student_id:
+        student = studRec.objects.get(student_id=student_id)
+        full_name = f"{student.first_name} {student.middle_name or ''} {student.last_name}".strip()
+    else:
+        full_name = "Student"  # Default if no student is logged in
+
+    return render(request, 'webapp/stud-dash.html', {
+        'student_name': full_name,
+    })
 
 
 # def student_login(request):
@@ -737,6 +784,7 @@ def prompt(request):
         'recent_logs': recent_logs
         }
       return render(request, 'webapp/student-prompt.html',context)
+
 def recent_logs(request):
     if request.method == 'GET':
         # Get the latest 10 logs
@@ -928,26 +976,26 @@ def student_request(request):
 
 def approve_request(request, request_id):
     pending_request = get_object_or_404(PendingRequests, id=request_id)
-    # Transfer to studRec, including email and password
-    studRec.objects.create(
-        student_id=pending_request.student_id,
-        first_name=pending_request.first_name,
-        middle_name=pending_request.middle_name,
-        last_name=pending_request.last_name,
-        suffix=pending_request.suffix,
-        course=pending_request.course,
-        major=pending_request.major,
-        picture=pending_request.picture,
-        email=pending_request.email,       # Transfer email
-        password=pending_request.password, # Transfer password (make sure it's already hashed)
-        username=pending_request.username,
-        status='Active'  # Set status to 'Active' when moving to studRec
+    
+    # Generate activation link
+    activation_link = request.build_absolute_uri(
+        reverse('activate-account', args=[pending_request.id])
     )
-    # Delete from PendingRequests
-    pending_request.delete()
 
-    messages.success(request, 'Student request approved and moved to records.')
-    return redirect('student-request')  # Redirect to the pending requests list view
+    # Send activation email to the student
+    send_mail(
+        'Activate Your Student Account',
+        f'Hello {pending_request.first_name},\n\n'
+        f'Please activate your student account by clicking the link below:\n\n'
+        f'{activation_link}\n\n'
+        f'Thank you!',
+        settings.DEFAULT_FROM_EMAIL,
+        [pending_request.email],
+        fail_silently=False,
+    )
+
+    messages.success(request, 'Activation email sent to the student.')
+    return redirect('student-request')
 
 
 
@@ -1015,6 +1063,8 @@ def get_attendance_data(request):
         return JsonResponse({'error': 'Month parameter is required'}, status=400)
 
 
+
+@login_required(login_url='unified-login')
 def all_logs(request):
     log_type = request.GET.get('log_type', '')
     date = request.GET.get('date', '')
@@ -1105,3 +1155,12 @@ def student_details(request, student_id):
     except PendingRequests.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
 
+class CheckFieldAvailability(View):
+    def get(self, request, *args, **kwargs):
+        field_name = request.GET.get('field_name')
+        field_value = request.GET.get('value')  # Adjusted to get the value from a parameter named 'value'
+
+        # Check if the field value exists in the database
+        exists = studRec.objects.filter(**{field_name: field_value}).exists()
+
+        return JsonResponse({'exists': exists})

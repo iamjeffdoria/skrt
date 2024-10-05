@@ -6,118 +6,116 @@
 <style>
     /* Light theme styles */
     body {
-        background-color: #f8f9fa; /* Light background */
-        color: #333; /* Dark text color */
-        font-family: 'Poppins', sans-serif; /* Clean and modern font */
+        background-color: #f8f9fa;
+        color: #333;
+        font-family: 'Poppins', sans-serif;
     }
 
     .modal-content {
-        background: #ffffff; /* White background for modal */
-        border: 2px solid #007bff; /* Light blue border */
-        color: #333; /* Dark text color */
-        border-radius: 6px; /* Subtle rounded corners */
-        box-shadow: 0 0 10px rgba(0, 123, 255, 0.2); /* Soft blue glow */
+        background: #ffffff;
+        border: 2px solid #007bff;
+        color: #333;
+        border-radius: 6px;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
     }
 
     .modal-header {
-        border-bottom: 1px solid #007bff; /* Light blue border for header */
+        border-bottom: 1px solid #007bff;
     }
 
     .modal-title {
-        color: #007bff; /* Light blue text color */
+        color: #007bff;
         font-weight: 600;
     }
 
     .btn-close {
-        filter: invert(0.5) brightness(1.2); /* Adjusted close button for light theme */
+        filter: invert(0.5) brightness(1.2);
     }
 
     .btn-primary {
-        background-color: #007bff; /* Primary blue background */
+        background-color: #007bff;
         border: none;
-        color: #fff; /* White text */
+        color: #fff;
         font-weight: bold;
     }
 
     .btn-primary:hover {
-        background-color: #0056b3; /* Slightly darker on hover */
+        background-color: #0056b3;
     }
 
     .btn-secondary {
-        background-color: #6c757d; /* Gray background for secondary button */
-        border: 1px solid #6c757d; /* Matching gray border */
-        color: #fff; /* White text color */
+        background-color: #6c757d;
+        border: 1px solid #6c757d;
+        color: #fff;
     }
 
     .btn-secondary:hover {
-        background-color: #5a6268; /* Darker background on hover */
+        background-color: #5a6268;
     }
 
     .table-wrapper {
-        max-height: 400px; /* Set maximum height for the table */
-        overflow-y: auto; /* Enable vertical scrolling */
         margin-top: 15px;
     }
 
     .table {
-        background-color: #ffffff; /* White background for the table */
-        color: #333; /* Dark text color */
-        border-radius: 6px; /* Subtle rounded corners */
-        border: 1px solid #dee2e6; /* Light border */
+        background-color: #ffffff;
+        color: #333;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
     }
 
     .table thead th {
-        background-color: #f1f1f1; /* Light background for header */
-        color: #333; /* Dark text color */
-        border-bottom: 1px solid #dee2e6; /* Light border */
+        background-color: #f1f1f1;
+        color: #333;
+        border-bottom: 1px solid #dee2e6;
     }
 
     .table-hover tbody tr {
-        background-color: #f8f9fa; /* Light background for rows */
+        background-color: #f8f9fa;
         transition: background-color 0.3s ease;
     }
 
     .table-hover tbody tr:hover {
-        background-color: #e9ecef; /* Slightly darker background on hover */
+        background-color: #e9ecef;
     }
 
     .table-hover tbody tr td {
-        border-color: #dee2e6; /* Light border */
-        background: #ffffff; /* Consistent white background */
-        color: #333; /* Dark text color */
+        border-color: #dee2e6;
+        background: #ffffff;
+        color: #333;
     }
 
     .form-label {
-        color: #333; /* Dark color for labels */
+        color: #333;
     }
 
     .form-control, .form-select {
-        background-color: #ffffff; /* White input fields */
-        color: #333; /* Dark text color */
-        border: 1px solid #ced4da; /* Light border */
+        background-color: #ffffff;
+        color: #333;
+        border: 1px solid #ced4da;
     }
 
     .form-control:focus, .form-select:focus {
-        border-color: #007bff; /* Light blue border on focus */
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Soft blue shadow */
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
 
     .btn-outline-primary {
-        color: #007bff; /* Light blue text */
-        border-color: #007bff; /* Light blue border */
+        color: #007bff;
+        border-color: #007bff;
     }
 
     .btn-outline-primary:hover {
-        background-color: #007bff; /* Light blue background on hover */
-        color: #fff; /* White text on hover */
+        background-color: #007bff;
+        color: #fff;
     }
 
     .pagination a {
-        color: #007bff; /* Light blue text for pagination links */
+        color: #007bff;
     }
 
     .pagination a:hover {
-        color: #0056b3; /* Darker blue text on hover */
+        color: #0056b3;
     }
 </style>
 
@@ -160,10 +158,11 @@
 </div>
 
 <!-- Data Table for Reports -->
+<!-- Data Table for Reports -->
 <div class="container my-3">
     <h3>My Reports</h3>
-    <div class="table-wrapper">
-        <table class="table table-hover table-bordered table-striped">
+    <div class="table-wrapper table-responsive">
+        <table id="reportsTable" class="table table-hover table-bordered table-striped">
             <thead>
                 <tr>
                     <th scope="col" class="id-column" style="width: 5%;">#</th>
@@ -189,4 +188,26 @@
         </table>
     </div>
 </div>
+
+<!-- jQuery and DataTables scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css"/>
+
+<script>
+    $(document).ready(function() {
+        // Initialize DataTables
+        $('#reportsTable').DataTable({
+            "paging": true,        // Enable pagination
+            "lengthChange": true,  // Allow changing number of entries
+            "searching": true,     // Enable search feature
+            "ordering": true,      // Enable column ordering
+            "info": true,          // Show table info
+            "autoWidth": false,    // Disable automatic column width
+            "lengthMenu": [5, 10, 25, 50, 100], // Entries per page
+            "pageLength": 10       // Default number of entries to display
+        });
+    });
+</script>
+
 {% endblock %}

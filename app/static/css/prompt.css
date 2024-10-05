@@ -149,18 +149,18 @@ h2 {
     margin: 0 15px; /* Increased spacing */
 }
 .time-date {
-    font-size: 47px; /* Increased font size */
+    font-size: 60px; /* Increased font size */
     font-weight: bold;
-    color: #ffffff; /* Solid neon green color */
+    color: yellow; /* Solid neon green color */
     text-align: center;
     margin: 25px 0; /* Increased margin for better spacing */
 
     /* Create a white border effect around the text */
     text-shadow: 
-        1px 1px 0 #ff170f, /* White border effect */
-        -1px -1px 0 #ff170f, /* White border effect */
-        1px -1px 0 #ff170f, /* White border effect */
-        -1px 1px 0 #ff170f; /* White border effect */
+        1px 1px 0 #000000, /* White border effect */
+        -1px -1px 0 #000000, /* White border effect */
+        1px -1px 0 #000000, /* White border effect */
+        -1px 1px 0 #000000; /* White border effect */
 }
 
 
@@ -313,7 +313,7 @@ h2 {
     }
 
     .time-date {
-        font-size: 22px; /* Further decrease font size */
+        font-size: 30px; /* Further decrease font size */
     }
 
     .profile-picture {

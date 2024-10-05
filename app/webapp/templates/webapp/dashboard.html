@@ -209,7 +209,7 @@ document.getElementById('major-filter').addEventListener('change', function() {
                 <td>${record.major}</td>
                 <td class="text-center">
                     <a href="/student-logs/${record.student_id}/" class="btn btn-info">View Logs</a>
-                    <a href="/record/${record.id}/" class="btn btn-success">More</a>
+                    <a href="/record/${record.id}/" class="btn btn-success"><i class="fa fa-eye" aria-hidden="true"></i></a>
                 </td> <!-- Combined buttons into one column -->
             `;
             recordsTableBody.appendChild(row);

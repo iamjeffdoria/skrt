@@ -126,6 +126,8 @@ class CreateRecordForm(forms.ModelForm):
         self.fields['username'].widget.attrs.update({'placeholder': 'Enter Username'})
 
 
+
+# student registration forms
 class StudRecForm(forms.ModelForm):
     class Meta:
         model = studRec  
@@ -192,9 +194,6 @@ class StudRecForm(forms.ModelForm):
         self.fields['username'].required = True  # Set this according to your requirements
         self.fields['username'].label = ""
         self.fields['username'].widget.attrs.update({'placeholder': 'Enter Username'})
-
-
-
 
 
 # Form for updating an existing record

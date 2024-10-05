@@ -8,7 +8,8 @@ from .views import approve_request, reject_request
 from .views import registration_data
 from .views import get_attendance_data
 from .views import student_details
-
+from .views import CheckFieldAvailability
+from .views import activate_account
 
 urlpatterns = [
     path('update-profile/', views.update_profile, name='update-profile'),
@@ -57,6 +58,10 @@ urlpatterns = [
     path('get-attendance-data/', get_attendance_data, name='get_attendance_data'),
     path('all-logs', views.all_logs, name='all-logs'),
     path('student-details/<int:student_id>/', student_details, name='student-details'),
+    path('check_username/', CheckFieldAvailability.as_view(), name='check_username'),
+    path('check_email/', CheckFieldAvailability.as_view(), name='check_email'),
+    path('check_student_id/', CheckFieldAvailability.as_view(), name='check_student_id'),
+    path('activate-account/<int:student_id>/', activate_account, name='activate-account'),
     
     
 ] 
