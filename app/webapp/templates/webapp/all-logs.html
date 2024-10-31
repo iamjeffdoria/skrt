@@ -43,19 +43,22 @@
                     <label for="major"><i class="fas fa-graduation-cap me-2"></i>Major</label>
                 </div>
             </div>
-            <div class="col-12 text-end mt-3">
-                <button type="submit" class="btn btn-primary px-4">
-                    <i class="fas fa-search me-2"></i>Apply Filters
-                </button>
+            <div class="col-lg-3 col-md-6">
+                <div class="form-floating">
+                    <select id="time_frame" name="time_frame" class="form-select custom-dropdown">
+                        <option value="">-- Select Time Frame --</option>
+                        <option value="today" {% if request.GET.time_frame == 'today' %}selected{% endif %}>This Day</option>
+                        <option value="this_week" {% if request.GET.time_frame == 'this_week' %}selected{% endif %}>This Week</option>
+                        <option value="this_month" {% if request.GET.time_frame == 'this_month' %}selected{% endif %}>This Month</option>
+                    </select>
+                    <label for="time_frame"><i class="fas fa-clock me-2"></i>Time Frame</label>
+                </div>
             </div>
         </div>
     </form>
-    
+
     <!-- Table -->
     <div class="table-responsive bg-white shadow-sm rounded-3 border border-2 p-3">
-        <div class="d-flex justify-content-between mb-2">
-         
-        </div>
         <table class="table table-striped table-hover align-middle text-left" id="logsTable">
             <thead class="table-success">
                 <tr>
@@ -83,7 +86,11 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-muted">No logs found.</td>
+                        <td class="text-muted">No logs found.</td>
+                        <td class="text-muted"></td>
+                        <td class="text-muted"></td>
+                        <td class="text-muted"></td>
+                        <td class="text-muted"></td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -91,56 +98,29 @@
     </div>
 </div>
 
-<!-- Include jQuery and DataTables -->
+<!-- jQuery Script for Dynamic Filtering and DataTable Initialization -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css"/>
-
-<!-- jQuery Script for Dynamic Functionality -->
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 <script>
 $(document).ready(function() {
-    var table = $('#logsTable').DataTable({
-        "pagingType": "simple_numbers", // Use simple numbers for pagination
-        "lengthChange": true, // Enable page length changing
-        "lengthMenu": [10, 25, 50, [100, "All"]], // Entries options
-        "searching": true, // Enable search
-        "ordering": true, // Enable column ordering
-        "info": true, // Show table information
-        "language": {
-            "paginate": {
-                "first": "<i class='fas fa-angle-double-left'></i>",
-                "last": "<i class='fas fa-angle-double-right'></i>",
-                "next": "<i class='fas fa-angle-right'></i>",
-                "previous": "<i class='fas fa-angle-left'></i>"
-            }
-        }
+    // Trigger filtering on dropdown change or date input
+    $('#log_type, #date, #course, #major, #time_frame').on('change', function() {
+        $('#filterForm').submit(); // Submit the form to apply filters automatically
     });
 
-    // Handle filter form submission
-    $('#filterForm').on('submit', function(e) {
-        e.preventDefault(); // Prevent the default form submission
-        var formData = $(this).serialize(); // Serialize form data
-        // Redirect to the same page with filtered data
-        window.location.href = "{% url 'all-logs' %}?" + formData;
-    });
+    // Initialize DataTable
+    var table = $('#logsTable').DataTable();
 
-    // Event listener for showing entries
-    $('#entries').change(function() {
-        var value = $(this).val();
-        table.page.len(value).draw();
-    });
-
-    // Event listener for search box
-    $('#searchBox').on('keyup', function() {
-        table.search(this.value).draw(); // Apply the search
-    });
+    // Reset DataTable when there are no logs
+    if ($('#logsTable tbody tr').length === 0) {
+        table.clear().draw(); // Clear DataTable
+    }
 });
 </script>
 
 <!-- Custom CSS for Dropdowns and Date Input -->
 <style>
-    .custom-dropdown,
-    .custom-input {
+    .custom-dropdown, .custom-input {
         font-size: 0.875rem; /* Larger text for better accessibility */
     }
 </style>

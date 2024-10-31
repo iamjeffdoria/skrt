@@ -2,22 +2,26 @@
 
 {% load static %}
 {% block content %}
-<div class="container p-4 mt-4 custom-bg" style="max-width: 400px;">
+
+<!-- Background for particles -->
+<div id="background-animation" class="background-animation"></div>
+
+<div class="container p-4 mt-4 custom-bg" style="max-width: 400px; position: relative; z-index: 2;">
     <div class="text-center">
-        <img src="{% static 'img/user-icon.png' %}" alt="User Icon" width="100" height="100">
+        <img src="{% static 'img/user-icon.png' %}" alt="User Icon" width="100" height="100" class="rounded-circle">
     </div>
     <h3 class="text-center mt-3">LOGIN</h3>
     <form method="POST" autocomplete="off" id="loginForm" onsubmit="showLoadingAnimation()">
         {% csrf_token %}
-        <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
-            <label for="username"><i class="fa fa-user-circle"></i> Username</label>
+        <div class="form-floating mb-4">
+            <input type="text" class="form-control rounded-pill px-4" id="username" name="username" placeholder="Username" required>
+            <label for="username" class="ps-4"><i class="fa fa-user-circle"></i> Username</label>
         </div>
-        <div class="form-floating mb-3">
-            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-            <label for="password"><i class="fa fa-unlock-alt"></i> Password</label>
+        <div class="form-floating mb-4">
+            <input type="password" class="form-control rounded-pill px-4" id="password" name="password" placeholder="Password" required>
+            <label for="password" class="ps-4"><i class="fa fa-unlock-alt"></i> Password</label>
         </div>
-        <button type="submit" id="loginButton" class="btn btn-primary w-100 p-2">Login</button>
+        <button type="submit" id="loginButton" class="btn btn-primary w-100 p-2 rounded-pill">Login</button>
     </form>
     <div class="text-center mt-3">
         <a href="{% url 'password_reset' %}" class="small" style="color: #122766;">Forgot Password?</a>
@@ -33,22 +37,26 @@
 
 <style>
     body {
-        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        background-color: black;
+        color: #122766;
     }
     .custom-bg {
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     .form-floating label {
         font-size: 14px;
+        color: #555;
     }
     .btn-primary {
         background-color: #122766;
         border: none;
-        padding: 12px;
-        border-radius: 30px;
         font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+    .btn-primary:hover {
+        background-color: #0f1d50;
     }
     .loading-spinner {
         position: fixed;
@@ -56,16 +64,21 @@
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
     }
     .spinner {
-        border: 8px solid rgba(0, 0, 0, 0.1);
-        border-top: 8px solid #122766;
+        border: 6px solid rgba(0, 0, 0, 0.1);
+        border-top: 6px solid #122766;
         border-radius: 50%;
-        width: 70px;
-        height: 70px;
+        width: 60px;
+        height: 60px;
         animation: spin 1s linear infinite;
     }
     #percentageText {
+        margin-top: 8px;
         font-size: 12px;
         color: #122766;
         font-weight: bold;
@@ -73,6 +86,15 @@
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+    }
+    /* Particle background */
+    .background-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
     }
 </style>
 
@@ -96,4 +118,48 @@
         }, 100);
     }
 </script>
+
+<!-- Particles.js configuration -->
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+    particlesJS("background-animation", {
+        "particles": {
+            "number": { "value": 150, "density": { "enable": true, "value_area": 800 } },
+            "color": { "value": "#ffffff" },
+            "shape": {
+                "type": "circle",
+                "stroke": { "width": 0, "color": "#000000" },
+                "polygon": { "nb_sides": 5 }
+            },
+            "opacity": { "value": 0.2, "random": false },
+            "size": { "value": 3.5, "random": true },
+            "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.5, "width": 1 },
+            "move": {
+                "enable": true,
+                "speed": 2,
+                "direction": "none",
+                "random": false,
+                "straight": false,
+                "out_mode": "out",
+                "bounce": false
+            }
+        },
+        "interactivity": {
+            "detect_on": "canvas",
+            "events": {
+                "onhover": { "enable": true, "mode": "grab" },
+                "onclick": { "enable": true, "mode": "push" },
+                "resize": true
+            },
+            "modes": {
+                "grab": { "distance": 200, "line_linked": { "opacity": 1 } },
+                "bubble": { "distance": 200, "size": 40, "duration": 2, "opacity": 8, "speed": 3 },
+                "repulse": { "distance": 200, "duration": 0.4 },
+                "push": { "particles_nb": 4 }
+            }
+        },
+        "retina_detect": true
+    });
+</script>
+
 {% endblock %}

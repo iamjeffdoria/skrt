@@ -124,6 +124,7 @@ class studRec(models.Model):
     email = models.EmailField(validators=[EmailValidator()], unique=True, blank=True, null=True)
     password = models.CharField(max_length=128, blank=True, null=True)
     username = models.CharField(max_length=150, blank=True)
+    expiration = models.DateField(blank=True, null=True)
 
 
     def __str__(self):

@@ -46,7 +46,7 @@ from django.contrib.auth.hashers import check_password
 from .models import HeadOfSecurity
 from django.views import View
 from django.core.mail import send_mail
-
+from dateutil.relativedelta import relativedelta
 
 
 def activate_account(request, student_id):
@@ -260,7 +260,7 @@ def process_rfid(request):
                 new_log.save()
 
                 # Fetch recent logs excluding the current student, ensure three logs
-                recent_logs = AttendanceLog.objects.exclude(student=student).order_by('-time')[:3]
+                recent_logs = AttendanceLog.objects.exclude(student=student).order_by('-time')[:10]
 
                 # Handle cases where fewer than 3 logs exist
                 if recent_logs.count() < 3:
@@ -617,6 +617,9 @@ def create_record(request):
                 # Hash the password
                 student.password = make_password(password)
 
+                # Set the expiration date to 5 months from now
+                student.expiration = timezone.now() + relativedelta(months=5)
+
                 # Save the student record with the hashed password
                 student.save()
 
@@ -631,7 +634,6 @@ def create_record(request):
         form = CreateRecordForm()
 
     return render(request, 'webapp/create-record.html', {'form': form})
-
         
 # Update Record
 @login_required(login_url='unified-login')
@@ -977,6 +979,9 @@ def student_request(request):
 def approve_request(request, request_id):
     pending_request = get_object_or_404(PendingRequests, id=request_id)
     
+    pending_request.status = 'Processing'
+    pending_request.save()
+    
     # Generate activation link
     activation_link = request.build_absolute_uri(
         reverse('activate-account', args=[pending_request.id])
@@ -1063,58 +1068,77 @@ def get_attendance_data(request):
         return JsonResponse({'error': 'Month parameter is required'}, status=400)
 
 
-
 @login_required(login_url='unified-login')
 def all_logs(request):
+    # Get filter parameters from the request
     log_type = request.GET.get('log_type', '')
     date = request.GET.get('date', '')
     course = request.GET.get('course', '')
     major = request.GET.get('major', '')
+    time_frame = request.GET.get('time_frame', '')
 
     filters = Q()
 
+    # Filter by log type if selected
     if log_type:
         filters &= Q(type=log_type)
+
+    # Filter by specific date if selected
     if date:
         try:
             date_obj = datetime.strptime(date, '%Y-%m-%d').date()
             filters &= Q(time__date=date_obj)
         except ValueError:
-            pass  # Handle invalid date format if needed
+            pass  # Ignore invalid date formats
+
+    # Filter by course if selected
     if course:
         filters &= Q(student__course=course)
+
+    # Filter by major if selected
     if major:
-        filters &= Q(student__major=major)  # Filtering based on student's major
+        filters &= Q(student__major=major)
+
+    # Filter by time frame (today, this week, this month) if selected
+    today = timezone.now().date()
+    if time_frame == 'today':
+        filters &= Q(time__date=today)
+    elif time_frame == 'this_week':
+        start_of_week = today - timedelta(days=today.weekday())  # Monday as start of the week
+        filters &= Q(time__date__range=[start_of_week, today])
+    elif time_frame == 'this_month':
+        filters &= Q(time__year=today.year, time__month=today.month)
 
     # Retrieve all logs based on filters
     all_logs = AttendanceLog.objects.filter(filters)
 
-  # Pass course and major choices for the filter dropdowns
+    # Course choices for the dropdown
     course_choices = [
-        ('BSMT', 'Bachelor of Science in Marine Transportation'),
-        ('BSMar-E', 'Bachelor of Science in Marine Engineering'),
-        ('BEEd', 'Bachelor of Elementary Education'),
-        ('BSed', 'Bachelor of Secondary Education'),
-        ('BTLEd', 'Bachelor of Technology and Livelihood Education'),
-        ('BTVTEd', 'Bachelor of Technical Vocational Teacher Education'),
-        ('BPEd', 'Bachelor of Physical Education'),
-        ('BACom', 'Bachelor of Arts in Communication'),
-        ('BSHM', 'Bachelor of Science in Hospitality Management'),
-        ('BSBA', 'Bachelor of Science in Business Administration major in Marketing Management'),
-        ('BSMarBio', 'Bachelor of Science in Marine Biology'),
-        ('BSIE', 'Bachelor of Science in Industrial Engineering'),
-        ('BSME', 'Bachelor of Science in Mechanical Engineering'),
-        ('BSEE', 'Bachelor of Science in Electrical Engineering'),
-        ('BSIT', 'Bachelor of Science in Information Technology'),
-        ('BSInT', 'Bachelor of Science in Industrial Technology'),
+        ('BSMT', 'Bachelor of Science in Marine Transportation(BSMT)'),
+        ('BSMar-E', 'Bachelor of Science in Marine Engineering(BSMar-E)'),
+        ('BEEd', 'Bachelor of Elementary Education(BEEd)'),
+        ('BSed', 'Bachelor of Secondary Education(BSed)'),
+        ('BTLEd', 'Bachelor of Technology and Livelihood Education(BTLEd)'),
+        ('BTVTEd', 'Bachelor of Technical Vocational Teacher Education(BTVTEd)'),
+        ('BPEd', 'Bachelor of Physical Education(BPEd)'),
+        ('BACom', 'Bachelor of Arts in Communication(BACom)'),
+        ('BSHM', 'Bachelor of Science in Hospitality Management(BSHM)'),
+        ('BSBA', 'Bachelor of Science in Business Administration major in Marketing Management(BSBA)'),
+        ('BSMarBio', 'Bachelor of Science in Marine Biology(BSMarBio)'),
+        ('BSIE', 'Bachelor of Science in Industrial Engineering(BSIE)'),
+        ('BSME', 'Bachelor of Science in Mechanical Engineering(BSME)'),
+        ('BSEE', 'Bachelor of Science in Electrical Engineering(BSEE)'),
+        ('BSIT', 'Bachelor of Science in Information Technology(BSIT)'),
+        ('BSInT', 'Bachelor of Science in Industrial Technology(BSInT)'),
     ]
 
+    # Major choices for the dropdown
     major_choices = [
         ('English', 'English'),
         ('Filipino', 'Filipino'),
         ('Mathematics', 'Mathematics'),
         ('Social Studies', 'Social Studies'),
-        ('Automative', 'Automative'),
+        ('Automotive', 'Automotive'),
         ('Drafting', 'Drafting'),
         ('Electrical', 'Electrical'),
         ('Electronics', 'Electronics'),
@@ -1126,12 +1150,12 @@ def all_logs(request):
         ('No Major', 'No Major'),
     ]
 
+    # Render the template with logs and dropdown choices
     return render(request, 'webapp/all-logs.html', {
-        'logs': all_logs,  # Pass all logs without pagination
+        'logs': all_logs,
         'course_choices': course_choices,
         'major_choices': major_choices,
     })
-
 
 
 def student_details(request, student_id):

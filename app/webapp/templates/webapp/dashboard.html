@@ -6,7 +6,7 @@
 
 <nav class="navbar navbar-expand-lg bg-light" data-bs-theme="light" style="border: 1px solid #ccc; border-radius: 5px; background-color: rgb(63, 196, 196);">
     <div class="container-fluid">
-      <a class="btn btn-primary btn-md create-rec" href="{% url 'create-record' %}">
+      <a class="btn btn-primary btn-md create-rec" href="{% url 'create-record' %}" style="margin-right: 2%;">
         <strong><i class="fa fa-user-plus" aria-hidden="true"></i> &nbsp; Add record</strong>
       </a>
       <div class="dropdown-container">
@@ -106,36 +106,41 @@
         {% if records.has_previous %}
             <li class="page-item">
                 <a class="page-link" href="?page=1{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}" aria-label="First">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
+                    &laquo;&laquo;
                 </a>
             </li>
             <li class="page-item">
                 <a class="page-link" href="?page={{ records.previous_page_number }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
+                    &laquo;
                 </a>
             </li>
         {% endif %}
 
         {% for page_num in records.paginator.page_range %}
-            <li class="page-item {% if records.number == page_num %}active{% endif %}">
-                <a class="page-link" href="?page={{ page_num }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}">{{ page_num }}</a>
-            </li>
+            {% if page_num == 1 or page_num == records.paginator.num_pages or page_num == records.number or page_num == records.number|add:-1 or page_num == records.number|add:1 %}
+                <li class="page-item {% if records.number == page_num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page_num }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}">{{ page_num }}</a>
+                </li>
+            {% elif page_num == 2 or page_num == records.paginator.num_pages|add:-1 %}
+                <li class="page-item">...</li>
+            {% endif %}
         {% endfor %}
 
         {% if records.has_next %}
             <li class="page-item">
                 <a class="page-link" href="?page={{ records.next_page_number }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
+                    &raquo;
                 </a>
             </li>
             <li class="page-item">
                 <a class="page-link" href="?page={{ records.paginator.num_pages }}{% if request.GET.entries %}&entries={{ request.GET.entries }}{% endif %}" aria-label="Last">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
+                    &raquo;&raquo;
                 </a>
             </li>
         {% endif %}
     </ul>
 </div>
+
 
 <script>
     document.getElementById('search-input').addEventListener('input', function(event) {

@@ -195,6 +195,30 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css"/>
 
 <script>
+
+window.alert = (function() {
+  var nativeAlert = window.alert;
+  return function(message) {
+    if (message.indexOf("DataTables warning") === 0) {
+      console.warn(message);
+    } else {
+      nativeAlert(message);
+    }
+  };
+})();
+
+$(document).ready(function() {
+  $('#reportsTable').DataTable({
+    "paging": true,
+    "lengthChange": true,
+    "searching": true,
+    "ordering": true,
+    "info": true,
+    "autoWidth": false,
+    "lengthMenu": [5, 10, 25, 50, 100],
+    "pageLength": 10
+  });
+});
     $(document).ready(function() {
         // Initialize DataTables
         $('#reportsTable').DataTable({

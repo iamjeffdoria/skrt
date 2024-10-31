@@ -13,7 +13,7 @@ body {
 }
 
 .school-name {
-    font-size: 2.8em; /* Increased font size */
+    font-size: 2.3em; /* Increased font size */
     font-weight: bold;
     color: #ffffff;
     margin: 0;
@@ -46,8 +46,8 @@ body {
     text-align: center;
 }
 .profile-picture {
-    width: 440px; /* Increased width */
-    height: 450px; /* Increased height */
+    width: 350px; /* Increased width */
+    height: 350px; /* Increased height */
     border-radius: 12px; /* Slightly more rounded corners */
     border: 3px solid #444; /* Darker border color */
     background-color: transparent;
@@ -140,7 +140,7 @@ h2 {
 }
 
 .school-logo {
-    width: 100px; /* Increased logo size */
+    width: 80px; /* Increased logo size */
 }
 
 .school-info {
@@ -149,7 +149,7 @@ h2 {
     margin: 0 15px; /* Increased spacing */
 }
 .time-date {
-    font-size: 60px; /* Increased font size */
+    font-size: 50px; /* Increased font size */
     font-weight: bold;
     color: yellow; /* Solid neon green color */
     text-align: center;
@@ -340,29 +340,8 @@ h2 {
 .recent-logs h3 {
     color: #c5f007; /* Green color for "Recent Students" */
 }
-.student-name, .student-course {
-    font-size: 1.5em; /* Adjusted for balance */
-    color: #ffffff; /* White text for contrast */
-    font-weight: 600; /* Semi-bold text for prominence */
-    display: inline-block;
-    padding: 10px 20px; /* Adjusted padding for better proportions */
-    background: linear-gradient(145deg, #007bff, #0056b3); /* Smooth gradient for a more realistic look */
-    border-radius: 12px; /* Rounded corners for a tag-like appearance */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Enhanced shadow for a more realistic depth */
-    text-align: center; /* Center text inside the tag */
-    margin: 5px; /* Margin to space out tags */
-}
 
 
-
-.student-name {
-    margin-top: 50px; /* Remove top margin for name */
-    margin-bottom: 5px; /* Space between name and course */
-}
-
-.student-course {
-    margin-top: 0; /* Remove top margin for course */
-}
 
 
 .student-pic {

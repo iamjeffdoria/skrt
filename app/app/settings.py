@@ -141,7 +141,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'jeffersondoria631@gmail.com'
-EMAIL_HOST_PASSWORD = 'bljc hxwm dnmi pwdt'
+EMAIL_HOST_PASSWORD = 'ivsv obyd nmyv yxyq'
 DEFAULT_FROM_EMAIL = 'jeffersondoria631@gmail.com'
 
 
