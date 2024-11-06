@@ -47,6 +47,126 @@ from .models import HeadOfSecurity
 from django.views import View
 from django.core.mail import send_mail
 from dateutil.relativedelta import relativedelta
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle,Image, Spacer, Frame
+from reportlab.lib.units import inch
+import os
+from django.templatetags.static import static
+
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.utils import timezone
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer
+from reportlab.lib import colors
+from datetime import datetime, timedelta
+from django.conf import settings
+from django.db.models import Q
+import os
+
+@login_required(login_url='unified-login')
+def download_logs_pdf(request):
+    # Retrieve filters from the request
+    log_type = request.GET.get('log_type', '')
+    date = request.GET.get('date', '')
+    course = request.GET.get('course', '')
+    major = request.GET.get('major', '')
+    time_frame = request.GET.get('time_frame', '')
+
+    # Apply filters for log entries
+    filters = Q()
+    if log_type:
+        filters &= Q(type=log_type)
+    if date:
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+            filters &= Q(time__date=date_obj)
+        except ValueError:
+            pass
+    if course:
+        filters &= Q(student__course=course)
+    if major:
+        filters &= Q(student__major=major)
+
+    # Time frame filters
+    today = timezone.now().date()
+    if time_frame == 'today':
+        filters &= Q(time__date=today)
+    elif time_frame == 'this_week':
+        start_of_week = today - timedelta(days=today.weekday())
+        filters &= Q(time__date__range=[start_of_week, today])
+    elif time_frame == 'this_month':
+        filters &= Q(time__year=today.year, time__month=today.month)
+
+    # Retrieve logs based on filters
+    filtered_logs = AttendanceLog.objects.filter(filters)
+
+    # Paths to logo images
+    logo_left_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'pitLOGO.png')
+    logo_right_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'cote.png')
+
+    # Create PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="logs.pdf"'
+
+    # Set up PDF document
+    doc = SimpleDocTemplate(response, pagesize=letter)
+
+    # Header with institutional details
+    header_data = [
+        [
+            Image(logo_left_path, width=50, height=50),
+            "Republic of the Philippines\nPalompon Institute of Technology\nPalompon, Leyte\nCOLLEGE OF TECHNOLOGY AND ENGINEERING",
+            Image(logo_right_path, width=50, height=50)
+        ],
+    ]
+
+    # Styling for header table with added line spacing and adjustments
+    header_table = Table(header_data, colWidths=[None, 350, None])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.black),
+        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ('FONTNAME', (1, 0), (1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (1, 0), (1, 0), 12),  # Slightly reduce font size for better spacing
+        ('LEADING', (1, 0), (1, 0), 14),   # Increase line spacing for readability
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),  # Additional padding for the header
+    ]))
+
+    # Table data for logs
+    table_data = [['Student Name', 'Course', 'Major', 'Log Type', 'Time']]
+    for log in filtered_logs:
+        row = [
+            f"{log.student.first_name} {log.student.middle_name or ''} {log.student.last_name} {log.student.suffix or ''}",
+            log.student.course,
+            log.student.major,
+            'Login' if log.type == 'login' else 'Logout',
+            log.time.strftime("%Y-%m-%d %H:%M:%S"),
+        ]
+        table_data.append(row)
+
+    # Styling the data table
+    table = Table(table_data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+
+    # Build PDF elements
+    elements = [header_table, Spacer(1, 20), table]
+
+    # Generate PDF
+    doc.build(elements)
+
+    return response
 
 
 def activate_account(request, student_id):
@@ -65,7 +185,8 @@ def activate_account(request, student_id):
         email=pending_request.email,
         password=pending_request.password,
         username=pending_request.username,
-        status='Active'
+        status='Active',
+        expiration=timezone.now() + relativedelta(months=5)
     )
 
     # Delete from PendingRequests
@@ -141,33 +262,7 @@ def unified_login(request):
     return render(request, 'webapp/unified-login.html', context)
 
 
-
-# def head_login(request):
-#     if request.method == 'POST':
-#         username = request.POST.get('username')
-#         password = request.POST.get('password')
-        
-#         try:
-#             # Find the head of security by username
-#             head_security = HeadOfSecurity.objects.get(username=username)
-            
-#             # Manually check the password
-#             if check_password(password, head_security.password):
-#                 request.session['user_type'] = 'head_of_security'
-#                 # Log the user in by setting session data or redirect them
-#                 request.session['security_id'] = head_security.id  # Example of session data
-                
-#                 return redirect('head-dashboard')
-                
-#             else:
-#                 messages.error(request, 'Invalid login credentials.')
-#         except HeadOfSecurity.DoesNotExist:
-#             messages.error(request, 'Invalid login credentials.')
-
-#     return render(request, 'webapp/head-login.html')
-
-
-
+@login_required(login_url='unified-login')
 def head_dashboard(request):
     recent_students = studRec.objects.all().order_by('-creation_date')[:3]
     student_count = studRec.objects.count()
@@ -259,13 +354,18 @@ def process_rfid(request):
                 new_log.date_out = current_date if record_type == 'logout' else None
                 new_log.save()
 
-                # Fetch recent logs excluding the current student, ensure three logs
-                recent_logs = AttendanceLog.objects.exclude(student=student).order_by('-time')[:10]
+                # Fetch recent logs excluding the current student, ensure three distinct students
+                recent_logs = AttendanceLog.objects.exclude(student=student).order_by('-time')
 
-                # Handle cases where fewer than 3 logs exist
-                if recent_logs.count() < 3:
-                    # Fill the recent_logs list with empty values to always have 3 items
-                    recent_logs = list(recent_logs) + [None] * (3 - recent_logs.count())
+                # Use a set to track seen students and limit to the first 3 distinct
+                seen_students = set()
+                distinct_recent_logs = []
+                for log in recent_logs:
+                    if log.student not in seen_students:
+                        seen_students.add(log.student)
+                        distinct_recent_logs.append(log)
+                    if len(distinct_recent_logs) == 3:
+                        break
 
                 recent_log_list = [
                     {
@@ -273,7 +373,7 @@ def process_rfid(request):
                             'picture': log.student.picture.url if log and log.student.picture else None
                         },
                     }
-                    for log in recent_logs
+                    for log in distinct_recent_logs
                 ]
 
                 response_data = {
@@ -296,6 +396,7 @@ def process_rfid(request):
         return JsonResponse({'status': 'error', 'message': 'Student not found'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
 
 # Homepage
 
@@ -442,7 +543,10 @@ def dashboard_real(request):
 
 
 def student_dashboard(request):
-
+    if request.user.is_authenticated:
+        return redirect('dashboard-real')  # Redirect to the admin/dashboard-real if authenticated
+    
+    
     student_id = request.session.get('student_id')
     
     if student_id:
@@ -602,6 +706,7 @@ def create_record(request):
         if form.is_valid():
             rfid_number = form.cleaned_data['rfid_number']
             student_id = form.cleaned_data['student_id']
+            email = form.cleaned_data.get('email') 
             password = form.cleaned_data['password']  # Get the plain password from the form
 
             # Check for existing RFID number or student ID
@@ -610,6 +715,9 @@ def create_record(request):
                 
             elif studRec.objects.filter(student_id=student_id).exists():
                 messages.warning(request, 'Student ID already exists.')
+            
+            elif studRec.objects.filter(email=email).exists():
+                messages.warning(request, 'Email already exists.')
             else:
                 # Create the student instance but don't save yet
                 student = form.save(commit=False)
@@ -645,6 +753,7 @@ def update_record(request, pk):
         if form.is_valid():
             student_id = form.cleaned_data.get('student_id')
             rfid_number = form.cleaned_data.get('rfid_number')
+            email = form.cleaned_data.get('email')
 
             # Check if student ID or RFID number already exists in another record
             if studRec.objects.filter(student_id=student_id).exclude(pk=pk).exists():
@@ -655,6 +764,10 @@ def update_record(request, pk):
                 messages.warning(request, 'A student with this RFID number already exists. Please check the details.')
                 return render(request, 'webapp/update-record.html', {'form': form, 'record': record})
 
+            if studRec.objects.filter(email=email).exclude(pk=pk).exists():
+                messages.warning(request, 'A student with this email already exists. Please check the details.')
+                return render(request, 'webapp/update-record.html', {'form': form, 'record': record})
+            
             # If validation passes, save the updated record
             updated_record = form.save()  # Save the form
             messages.success(request, "Record Updated")  # Add success message
@@ -1070,6 +1183,7 @@ def get_attendance_data(request):
 
 @login_required(login_url='unified-login')
 def all_logs(request):
+    
     # Get filter parameters from the request
     log_type = request.GET.get('log_type', '')
     date = request.GET.get('date', '')
@@ -1179,12 +1293,32 @@ def student_details(request, student_id):
     except PendingRequests.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
 
-class CheckFieldAvailability(View):
-    def get(self, request, *args, **kwargs):
-        field_name = request.GET.get('field_name')
-        field_value = request.GET.get('value')  # Adjusted to get the value from a parameter named 'value'
+def check_username_availability(request):
+    username = request.GET.get('username', None)
+    data = {
+        'is_taken': studRec.objects.filter(username=username).exists() or PendingRequests.objects.filter(username=username).exists()
+    }
+    return JsonResponse(data)
 
-        # Check if the field value exists in the database
-        exists = studRec.objects.filter(**{field_name: field_value}).exists()
 
-        return JsonResponse({'exists': exists})
+def check_student_id_availability(request):
+    student_id = request.GET.get('student_id', None)
+    data = {
+        'is_taken': studRec.objects.filter(student_id=student_id).exists() or PendingRequests.objects.filter(student_id=student_id).exists()
+    }
+    return JsonResponse(data)
+
+def check_email_availability(request):
+    email = request.GET.get('email', None)
+    data = {'is_taken': False, 'invalid_email': False}
+
+    # Validate email format
+    try:
+        validate_email(email)
+    except ValidationError:
+        data['invalid_email'] = True
+    else:
+        # Check if email exists in either the main or pending records
+        data['is_taken'] = studRec.objects.filter(email=email).exists() or PendingRequests.objects.filter(email=email).exists()
+    
+    return JsonResponse(data)

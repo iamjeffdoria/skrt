@@ -72,22 +72,22 @@ class UserProfile(models.Model):
 # New model for Departments
 
 COURSE_CHOICES = [
-    ('BSMT', 'Bachelor of Science in Marine Transportation'),
-    ('BSMar-E', 'Bachelor of Science in Marine Engineering'),   
-    ('BEEd', 'Bachelor of Elementary Education'),
-    ('BSed', 'Bachelor of Secondary Education'),
-    ('BTLEd', 'Bachelor of Technology and Livelihood Education'),
-    ('BTVTEd', 'Bachelor of Technical Vocational Teacher Education'),
-    ('BPEd', 'Bachelor of Physical Education'),
-    ('BACom', 'Bachelor of Arts in Communication'),
-    ('BSHM', 'Bachelor of Science in Hospitality Management'),
-    ('BSBA', 'Bachelor of Science in Business Administration major in Marketing Management'),
-    ('BSMarBio', 'Bachelor of Science in Marine Biology'),
-    ('BSIE', 'Bachelor of Science in Industrial Engineering'),
-    ('BSME', 'Bachelor of Science in Mechanical Engineering'),
-    ('BSEE', 'Bachelor of Science in Electrical Engineering'),
-    ('BSIT', 'Bachelor of Science in Information Technology'),
-    ('BSInT', 'Bachelor of Science in Industrial Technology'),
+    ('BSMT', 'Bachelor of Science in Marine Transportation(BSMT)'),
+    ('BSMar-E', 'Bachelor of Science in Marine Engineering(BSME)'),   
+    ('BEEd', 'Bachelor of Elementary Education(BEEd)'),
+    ('BSed', 'Bachelor of Secondary Education(BSed)'),
+    ('BTLEd', 'Bachelor of Technology and Livelihood Education(BTLEd)'),
+    ('BTVTEd', 'Bachelor of Technical Vocational Teacher Education(BTVTEd)'),
+    ('BPEd', 'Bachelor of Physical Education(BPEd)'),
+    ('BACom', 'Bachelor of Arts in Communication(BACom)'),
+    ('BSHM', 'Bachelor of Science in Hospitality Management(BSHM)'),
+    ('BSBA', 'Bachelor of Science in Business Administration(BSBA)'),
+    ('BSMarBio', 'Bachelor of Science in Marine Biology(BSMarBio)'),
+    ('BSIE', 'Bachelor of Science in Industrial Engineering(BSIE)'),
+    ('BSME', 'Bachelor of Science in Mechanical Engineering(BSME)'),
+    ('BSEE', 'Bachelor of Science in Electrical Engineering(BSEE)'),
+    ('BSIT', 'Bachelor of Science in Information Technology(BSIT)'),
+    ('BSInT', 'Bachelor of Science in Industrial Technology(BSInT)'),
 ]
 
 MAJOR_CHOICES = [

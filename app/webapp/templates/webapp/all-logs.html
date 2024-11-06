@@ -56,7 +56,10 @@
             </div>
         </div>
     </form>
-
+    <a href="{% url 'download-logs-pdf' %}?log_type={{ request.GET.log_type }}&date={{ request.GET.date }}&course={{ request.GET.course }}&major={{ request.GET.major }}&time_frame={{ request.GET.time_frame }}" class="btn btn-primary">
+        <ion-icon name="download-outline"></ion-icon> Download PDF
+    </a>
+    <hr>
     <!-- Table -->
     <div class="table-responsive bg-white shadow-sm rounded-3 border border-2 p-3">
         <table class="table table-striped table-hover align-middle text-left" id="logsTable">

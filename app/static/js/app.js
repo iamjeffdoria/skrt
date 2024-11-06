@@ -2,7 +2,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const rfidInput = document.getElementById("rfid_input");
   const miniTableBody = document.querySelector(".recent-logs tbody");
 
-  // Function to send RFID data to the server
+  let lastRFID = null;
+  let lastScanTime = 0;
+  let isProcessing = false;
+
   function sendRFIDData(rfid_number) {
     const formData = new FormData();
     formData.append("rfid_number", rfid_number);
@@ -15,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((data) => {
         if (data.status === "success") {
           updateStudentInfo(data.data);
-          updateRecentLogs(data.data.recent_logs);  // Use recent_logs from the response
+          updateRecentLogs(data.data.recent_logs);
 
           if (data.data.type === "login") {
             showLoginMessage(data.data);
@@ -31,12 +34,27 @@ document.addEventListener("DOMContentLoaded", function () {
         showUnregisteredCardError();
       })
       .finally(() => {
-        setTimeout(() => {
-          isProcessing = false;
-        }, 2000);
+        isProcessing = false;
       });
   }
 
+  rfidInput.addEventListener("keyup", function (event) {
+    if (event.key === "Enter" || event.keyCode === 13) {
+      const rfidNumber = rfidInput.value.trim();
+      const currentTime = Date.now();
+
+      if (rfidNumber && (rfidNumber !== lastRFID || (currentTime - lastScanTime >= 2000))) {
+        // Only process if a different RFID or 3 seconds have passed
+        lastRFID = rfidNumber;
+        lastScanTime = currentTime;
+        sendRFIDData(rfidNumber);
+      }
+
+      rfidInput.value = ""; // Clear the input
+    }
+  });
+
+  rfidInput.focus();  // Ensure the RFID input field has focus on load
   function updateStudentInfo(studentData) {
     console.log(studentData); // Check if studentData is logged correctly
 
@@ -111,7 +129,7 @@ function updateRecentLogs(logs) {
     const message = `${studentData.first_name} ${studentData.last_name} entered PIT at ${studentData.time}`;
     Toastify({
       text: message,
-      duration: 3000,
+      duration: 1000,
       close: true,
       gravity: "top",
       position: "center",
@@ -131,7 +149,7 @@ function updateRecentLogs(logs) {
     const message = `${studentData.first_name} ${studentData.last_name} left PIT at ${studentData.time}`;
     Toastify({
       text: message,
-      duration: 3000,
+      duration: 1000,
       close: true,
       gravity: "top",
       position: "center",
@@ -150,7 +168,7 @@ function updateRecentLogs(logs) {
   function showUnregisteredCardError() {
     Toastify({
       text: "Unregistered card. Contact Christian Badilla.",
-      duration: 2000,
+      duration: 1000,
       close: true,
       gravity: "top",
       position: "center",
@@ -200,11 +218,18 @@ function updateRecentLogs(logs) {
 function updateTime() {
   const now = new Date();
   const timeString = now.toLocaleTimeString();
-  const dateString = now.toISOString().split("T")[0];
+  
+  // Format the date to "Month Day, Year" format
+  const dateString = now.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
 
   document.getElementById("current-time").innerText = `TIME: ${timeString}`;
   document.getElementById("current-date").innerText = `DATE: ${dateString}`;
 }
+
 
 setInterval(updateTime, 1000);
 window.onload = updateTime;

@@ -45,14 +45,7 @@ body {
     margin-right: 20px;
     text-align: center;
 }
-.profile-picture {
-    width: 350px; /* Increased width */
-    height: 350px; /* Increased height */
-    border-radius: 12px; /* Slightly more rounded corners */
-    border: 3px solid #444; /* Darker border color */
-    background-color: transparent;
-    margin-bottom: 15px; /* Increased space below the picture */
-}
+
 
 .profile-info h2 {
     margin-top: 10px;
@@ -140,7 +133,7 @@ h2 {
 }
 
 .school-logo {
-    width: 80px; /* Increased logo size */
+    width: 90px; /* Increased logo size */
 }
 
 .school-info {

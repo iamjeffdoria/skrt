@@ -1,168 +1,101 @@
 {% load static %}
+{% block content %}
+<!-- Include Google Fonts -->
+<link rel="icon" href="{% static 'img/pitLOGO.png' %}">
+<link rel="stylesheet" href="{% static 'css/prompt.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+<script type="module" src="https://unpkg.com/ionicons@7.1.1/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule="" src="https://unpkg.com/ionicons@7.1.1/dist/ionicons/ionicons.js"></script>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-
-<body class="bg-light text-dark p-4" style="font-family: 'Poppins', sans-serif;">
-    <div class="container">
-        <div class="text-center mb-5" style="color: #333; position: relative;">
-            <img src="{% static 'img/pitLOGO.png' %}" alt="Logo Left" class="logo position-absolute" style="width: 100px; left: 10px; top: 10px;">
-            <h1>Palompon Institute of Technology</h1>
-            <p class="address text-muted" style="margin-top: -5px;">Evangelista St. Palompon Leyte</p>
-            <img src="{% static 'img/newcote.png' %}" alt="Logo Right" class="logo position-absolute" style="width: 100px; right: 10px; top: 10px;">
-        </div>
-
-        <div class="bg-white p-3 mb-3 rounded shadow">
-            <h2>Current Student</h2>
-            <table class="table table-dark table-striped">
-                <tr>
-                    <td rowspan="5" class="text-center align-middle">
-                        <img id="student-pic" class="img-fluid rounded" src="" alt="Profile Picture" style="width: 180px; height: 180px; object-fit: cover; border: 3px solid #333;">
-                    </td>
-                    <th>Name</th>
-                    <td id="student-name"></td>
-                </tr>
-                <tr>
-                    <th>Major</th>
-                    <td id="student-major"></td>
-                </tr>
-                <tr>
-                    <th>Status</th>
-                    <td id="student-type"></td>
-                </tr>
-                <tr>
-                    <th>Date</th>
-                    <td id="student-date"></td>
-                </tr>
-                <tr>
-                    <th>Time</th>
-                    <td id="student-time"></td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="bg-white p-3 mb-3 rounded shadow">
-            <h2>Recent Students</h2>
-            <div class="d-flex flex-wrap" id="recent-log-container">
-                <!-- Recent log student profile pictures will be displayed here -->
-            </div>
-        </div>
-
-        <!-- Hidden RFID input field -->
-        <input type="text" id="rfid-input" class="form-control position-absolute" placeholder="Scan or enter RFID number" style="left: -9999px;">
+<div class="school-header">
+    <div id="rfid-error" class="rfid-error hidden">Unregistered card. Please try again.</div>
+    
+    <img src="{% static 'img/pitLOGO.png' %}" alt="School Logo" class="school-logo">
+    
+    <div class="school-info">
+        <div class="school-name">PALOMPON INSTITUTE OF TECHNOLOGY</div>
+        <div class="school-address">Evangelista Street, 6538 Palompon Leyte Philippines</div>
     </div>
 
-    <!-- Time and Date at the Bottom -->
-    <div id="current-time" class="dynamic-time text-center mt-4" style="font-size: 1.5em; font-weight: bold; color: #333;"></div>
+    <img src="{% static 'img/newcote.png' %}" alt="Other Logo" class="school-logo">
+</div>
 
-    <!-- JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script>
-        function updateDashboard(data) {
-            $('#student-name').text(`${data.first_name} ${data.middle_name || ''} ${data.last_name} ${data.suffix || ''}`);
-            $('#student-major').text(data.major);
-            $('#student-type').html(`<span class="${data.type === 'login' ? 'text-success' : 'text-danger'}">${data.type.charAt(0).toUpperCase() + data.type.slice(1)}</span>`);
-            $('#student-time').text(data.time);
-            $('#student-date').text(data.date);
-            $('#student-pic').attr('src', data.picture || '/static/default.png');
+<input type="text" id="rfid_input" style="position: absolute; left: -9999px;" autocomplete="off" />
 
-            const recentLogsContainer = $('#recent-log-container');
-            recentLogsContainer.empty();
+<!-- Unified container to hold profile picture, student info, and recent logs -->
+<div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+    <div id="rfid-error" class="rfid-error hidden">Unregistered card.</div>
 
-            data.recent_logs.forEach(log => {
-                recentLogsContainer.append(
-                    `<img src="${log.student.picture || '/static/default.png'}" class="rounded-circle" style="width: 70px; height: 70px; object-fit: cover; margin-right: 10px; border: 2px solid #333;" alt="Recent Log Student Picture">`
-                );
-            });
+    <!-- Profile Section -->
+    <div class="profile-section" style="flex: 1; min-width: 250px; text-align: center; margin-top: 5%;">
+        <div class="profile-picture">
+            {% if picture_url %}
+                <img src="{{ picture_url }}" alt="Profile Picture" class="profile-picture" style="width: 100%; height: auto; border-radius: 5%">
+            {% else %}
+                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Default Profile Picture" class="profile-picture" style="width: 100%; height: auto; border-radius: 3%;">
+            {% endif %}
+        </div>
+        <div id="student-info" class="student-info text-center mt-3">
+            <div class="row">
+                <div class="col-12">
+                    <div id="student-name" class="student-name display-4" style="color: #c5f007; font-size: 1.7em; font-weight: bold; text-align: center;">-------</div> <!-- Replace ----- with actual student name -->
+                </div>
+                <div class="col-12">
+                    <div id="student-course" class="student-course h5" style="color: #ffffff; font-size: 1.7em; text-align: center;">--------</div> <!-- Replace ------- with actual course -->
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
 
-            // Show Toastify notification for login
-            if (data.type === 'login') {
-                Toastify({
-                    text: "Student logged in successfully!",
-                    duration: 3000,
-                    close: true,
-                    gravity: "top",
-                    position: "center",
-                    backgroundColor: "#4CAF50",
-                    stopOnFocus: true
-                }).showToast();
-            } else {
-                // Show Toastify notification for logout
-                Toastify({
-                    text: "Student logged out successfully!",
-                    duration: 3000,
-                    close: true,
-                    gravity: "top",
-                    position: "center",
-                    backgroundColor: "#FF5A5F",
-                    stopOnFocus: true
-                }).showToast();
-            }
-        }
+    <!-- Profile Details Section -->
+    <div class="profile-details" style="flex: 1; min-width: 450px; margin-right: 5%; margin-top: 5%; padding: 20px; background: #0f1a3b; border-radius: 12px;">
+        <table class="profile-table" style="width: 100%;">
+            <tbody>
+                <tr>
+                    <th colspan="1"><ion-icon name="alarm-sharp"></ion-icon> &nbsp; TIME</th> 
+                </tr>
+                <tr>
+                    <td colspan="1" style="width: 100%;">-----</td>
+                </tr>
+                <tr>
+                    <th><ion-icon name="keypad-sharp"></ion-icon> &nbsp; TYPE</th> 
+                </tr>
+                <tr>
+                    <td colspan="1" style="width: 100%;">-----</td>
+                </tr>
+                <tr>
+                    <th><ion-icon name="calendar-sharp"></ion-icon> &nbsp; DATE</th> 
+                </tr>
+                <tr>
+                    <td colspan="1" style="width: 100%;">-----</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-        function updateTime() {
-            const now = new Date();
-            const dateOptions = { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric'
-            };
-            const timeOptions = { 
-                hour: 'numeric', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                hour12: true 
-            };
-            
-            const formattedDate = now.toLocaleDateString('en-US', dateOptions);
-            const formattedTime = now.toLocaleTimeString('en-US', timeOptions).toLowerCase();
+    <!-- Recent Logs Section -->
+    <div class="recent-logs" style="flex: 1; width: 150px; background-color: #1a2a4c; padding: 10px; border-radius: 12px; text-align: center;">
+        <h3 style="color: #c5f007; font-size: 1.5em; margin: 5px 0;">Recent Students</h3>
+        <table class="mini-table" style="width: 100%; margin: 0 auto;">
+            <tbody>
+                <!-- Add recent log data here -->
+            </tbody>
+        </table>
+    </div>
+</div>
 
-            $('#current-time').html(`${formattedDate}<br><div style="font-size: 2em; font-weight: bold;">${formattedTime}</div>`);
-        }
+<div class="real-time-info time-date" style="text-align: center; margin-top: 20px;">
+    <strong id="current-time">Current Time: --:--:--</strong>
+    &nbsp; &nbsp;
+    <strong id="current-date">Current Date: YYYY-MM-DD</strong>
+</div>
 
-        $(document).ready(function () {
-            $('#rfid-input').focus();
+<!-- JavaScript resources -->
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="{% static 'js/app.js'%}"></script>
 
-            $('#rfid-input').on('keydown', function (e) {
-                if (e.keyCode === 13) {
-                    const rfid_number = $(this).val().trim();
-                    if (rfid_number) {
-                        $.post('/process-rfid/', { 'rfid_number': rfid_number }, function (response) {
-                            if (response.status === 'success') {
-                                updateDashboard(response.data);
-                                $('#rfid-input').val('').focus();
-                            } else {
-                                // Show Toastify notification if RFID is not found
-                                Toastify({
-                                    text: response.message || "RFID not recognized",
-                                    duration: 3000,
-                                    close: true,
-                                    gravity: "top",
-                                    position: "center",
-                                    backgroundColor: "#FF5A5F",
-                                    stopOnFocus: true
-                                }).showToast();
-                                $('#rfid-input').val('').focus();
-                            }
-                        });
-                    } else {
-                        $('#rfid-input').val('').focus();
-                    }
-                }
-            });
-
-            updateTime(); // Update time initially
-            setInterval(updateTime, 1000); // Update time every second
-        });
-    </script>
-</body>
-</html>
+{% endblock %}

@@ -8,10 +8,12 @@ from .views import approve_request, reject_request
 from .views import registration_data
 from .views import get_attendance_data
 from .views import student_details
-from .views import CheckFieldAvailability
+from .views import all_logs, download_logs_pdf
 from .views import activate_account
 
 urlpatterns = [
+    path('all-logs/', all_logs, name='all-logs'),
+    path('download-logs-pdf/', download_logs_pdf, name='download-logs-pdf'),
     path('update-profile/', views.update_profile, name='update-profile'),
     path('', views.home, name="index"),
     path('search/', search_records, name='search-records'),
@@ -58,12 +60,12 @@ urlpatterns = [
     path('get-attendance-data/', get_attendance_data, name='get_attendance_data'),
     path('all-logs', views.all_logs, name='all-logs'),
     path('student-details/<int:student_id>/', student_details, name='student-details'),
-    path('check_username/', CheckFieldAvailability.as_view(), name='check_username'),
-    path('check_email/', CheckFieldAvailability.as_view(), name='check_email'),
-    path('check_student_id/', CheckFieldAvailability.as_view(), name='check_student_id'),
+ 
     path('activate-account/<int:student_id>/', activate_account, name='activate-account'),
     
-    
+    path('check-username-availability/', views.check_username_availability, name='check_username_availability'),
+    path('check-student-id-availability/', views.check_student_id_availability, name='check_student_id_availability'),
+    path('check_email_availability/', views.check_email_availability, name='check_email_availability'),
 ] 
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
