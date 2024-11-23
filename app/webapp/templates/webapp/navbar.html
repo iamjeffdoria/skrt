@@ -13,7 +13,6 @@
       
   </head>
   <body>
-  
 
     <!-- Notification Bar -->
     <div id="notification-bar" class="notification-bar">
@@ -281,7 +280,16 @@
             });
         });
 
-      
+        document.addEventListener('DOMContentLoaded', function() {
+        const currentUrl = window.location.href;
+        const sidebarLinks = document.querySelectorAll('.sidebar-item .sidebar-link');
+
+        sidebarLinks.forEach(link => {
+            if (link.href === currentUrl) {
+                link.parentElement.classList.add('active'); // Add 'active' class to the sidebar-item
+            }
+        });
+    });
     </script>
     <style>
 
@@ -313,6 +321,12 @@
             background-color: #d33 !important;
             border-radius: 5px;
             padding: 10px 20px;
+        }
+                /* In sidebar.css */
+        .sidebar-item.active .sidebar-link {
+            background-color: #59588b; /* Example color */
+            color: white;
+            font-weight: bold;
         }
     </style>
     
@@ -485,9 +499,21 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-               
-		  
                 <li class="sidebar-item">
+                    <a href="{% url 'all-logs'%}" class="sidebar-link">
+                        <ion-icon name="eye-outline"></ion-icon>
+                        <span>View All Logs</span>
+                    </a>
+                </li>
+           
+
+		   <li class="sidebar-item">
+                    <a href="{% url 'dashboard' %}" class="sidebar-link">
+                        <ion-icon name="book-outline"></ion-icon>
+                        <span>Student List</span>
+                    </a>
+                </li>
+                <!-- <li class="sidebar-item">
                     <a href="#" class="sidebar-link has-dropdown collapsed no-loading" data-bs-toggle="collapse" 
                     data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
                         <ion-icon name="caret-down-outline"></ion-icon>
@@ -507,7 +533,7 @@
                         </li>
                       
                     </ul>
-                </li>
+                </li> -->
                  
               </ul>
           </aside>

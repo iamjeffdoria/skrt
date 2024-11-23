@@ -8,7 +8,6 @@ from .models import studRec
 from .models import UserProfile 
 
 
-
 # Register admin
 
 class CreateAdminForm(UserCreationForm):

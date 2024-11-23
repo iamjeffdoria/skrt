@@ -106,6 +106,16 @@
     .pagination a:hover {
         color: #ff5722;
     }
+
+    /* Custom styles to align filters horizontally */
+    .filters-row .col-md-6 {
+        margin-bottom: 0;
+    }
+
+    .filters-row .form-label {
+        margin-bottom: 0.5rem;
+    }
+
 </style>
 
 <div class="text-center mb-4">
@@ -129,23 +139,16 @@
 
     <!-- Filter form -->
     <form id="filter-form" method="get" class="mb-3">
-        <div class="row">
-            <div class="col-md-6 mb-2">
+        <div class="row filters-row">
+            <div class="col-md-3 mb-2">
                 <label for="start_date" class="form-label">Start Date:</label>
                 <input type="date" id="start_date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
             </div>
-            <div class="col-md-6 mb-2">
+            <div class="col-md-3 mb-2">
                 <label for="end_date" class="form-label">End Date:</label>
                 <input type="date" id="end_date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
             </div>
-        </div>
-        <input type="hidden" name="entries" value="{{ request.GET.entries }}">
-    </form>
-
-    <!-- Entries dropdown form -->
-    <form id="entries-form" method="get" class="mb-3">
-        <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-3 mb-2">
                 <label for="entries" class="form-label">Show:</label>
                 <select id="entries" name="entries" class="form-select" onchange="document.getElementById('entries-form').submit();">
                     <option value="">-------</option>
@@ -154,8 +157,16 @@
                     <option value="25" {% if request.GET.entries == "25" %}selected{% endif %}>25</option>
                     <option value="50" {% if request.GET.entries == "50" %}selected{% endif %}>50</option>
                 </select>
-                <input type="hidden" name="start_date" value="{{ request.GET.start_date }}">
-                <input type="hidden" name="end_date" value="{{ request.GET.end_date }}">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label for="time_frame" class="form-label">Time Frame:</label>
+                <select id="time_frame" name="time_frame" class="form-select" onchange="document.getElementById('time-frame-form').submit();">
+                    <option value="" {% if time_frame == "" %}selected{% endif %}>------</option>
+                    <option value="this_day" {% if time_frame == "this_day" %}selected{% endif %}>This Day</option>
+                    <option value="this_week" {% if time_frame == "this_week" %}selected{% endif %}>This Week</option>
+                    <option value="this_month" {% if time_frame == "this_month" %}selected{% endif %}>This Month</option>
+                </select>
+                
             </div>
         </div>
     </form>
@@ -204,18 +215,19 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('filter-form');
-        const startDateInput = document.getElementById('start_date');
-        const endDateInput = document.getElementById('end_date');
-
-        function updateFilter() {   
-            form.submit();
-        }
-
-        startDateInput.addEventListener('change', updateFilter);
-        endDateInput.addEventListener('change', updateFilter);
-    });
+   document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filter-form');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const entriesSelect = document.getElementById('entries');
+    const timeFrameSelect = document.getElementById('time_frame');
+    
+    // Trigger form submission on value change
+    startDateInput.addEventListener('change', () => form.submit());
+    endDateInput.addEventListener('change', () => form.submit());
+    entriesSelect.addEventListener('change', () => form.submit());
+    timeFrameSelect.addEventListener('change', () => form.submit());
+   });
 </script>
 
 {% endblock %}

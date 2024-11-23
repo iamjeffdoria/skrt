@@ -163,12 +163,20 @@
                 </div>
 
                 <!-- Password -->
-                <div class="col-md-6">
-                    <label for="password" class="form-label"><i class="fas fa-lock"></i> Password</label>
-                    <div style="width: 250px;">
-                        {{ form.password|as_crispy_field }}
-                    </div>
-                </div>
+<div class="col-md-6">
+    <label for="password" class="form-label"><i class="fas fa-lock"></i> Password</label>
+    <div style="width: 250px;">
+        {{ form.password|as_crispy_field }}
+    </div>
+</div>
+
+<div class="col-md-6">
+    <label for="confirmPassword" class="form-label"><i class="fas fa-lock"></i> Confirm Password</label>
+    <div style="width: 250px;">
+        <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password">
+    </div>
+    <div id="passwordMatchMessage" class="availability-message"></div>
+</div>
 
                 <!-- Course Dropdown -->
                 <div class="col-md-6">
@@ -178,6 +186,8 @@
                     </div>
                 </div>
 
+                <!-- Confirm Password -->
+
                 <!-- Major Dropdown -->
                 <div class="col-md-6">
                     <label for="studentMajor" class="form-label"><i class="fas fa-book"></i> Major</label>
@@ -186,24 +196,24 @@
                     </div>
                 </div>
 
-                <!-- Upload Profile Picture -->
-                <div class="col-md-6">
-                    <label for="studentPicture" class="form-label"><i class="fas fa-camera"></i> Profile Picture</label>
-                    <div style="width: 250px;">
-                        {{ form.picture|as_crispy_field }}
-                    </div>
-                </div>
-            </div>
+                               <!-- Upload Profile Picture -->
+                               <div class="col-md-6">
+                                <label for="studentPicture" class="form-label"><i class="fas fa-camera"></i> Profile Picture</label>
+                                <div style="width: 250px;">
+                                    {{ form.picture|as_crispy_field }}
+                                </div>
+                                
+                                <!-- Image Preview Container (2x2 inches) -->
+                                <div class="preview-container mt-3" id="previewContainer">
+                                    <span id="placeholderText">No Image</span>
+                                </div>
+                            </div>
+            
 
-            <!-- Image Preview Container (2x2 inches) -->
-            <div class="preview-container" id="previewContainer">
-                <span id="placeholderText">No Image</span>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn submit-btn mt-3">
-                <i class="fas fa-paper-plane"></i> Submit Registration
-            </button>
+                            <button type="submit" class="btn submit-btn mt-3" id="submitBtn">
+                                <i class="fas fa-paper-plane"></i> Submit Registration
+                            </button>
+                            
         </form>
     </div>
 </div>
@@ -296,31 +306,66 @@ $(document).ready(function() {
 
 });
 
-    function previewImage() {
-        const fileInput = document.getElementById('id_picture');
-        const previewContainer = document.getElementById('previewContainer');
-        const placeholderText = document.getElementById('placeholderText');
 
-        const file = fileInput.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                placeholderText.style.display = 'none';
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.classList.add('preview-img');
-                previewContainer.innerHTML = '';
-                previewContainer.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        } else {
-            placeholderText.style.display = 'block';
-            previewContainer.innerHTML = '';
-        }
+   function previewImage() {
+    const fileInput = document.getElementById('id_picture');
+    const previewContainer = document.getElementById('previewContainer');
+    const placeholderText = document.getElementById('placeholderText');
+    
+    const file = fileInput.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            // Hide the placeholder text and clear any existing preview image
+            placeholderText.style.display = 'none';
+            previewContainer.innerHTML = '';  // Clear previous preview
+            
+            // Create a new img element with the selected image
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.classList.add('preview-img');
+            
+            previewContainer.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // If no file is selected, show placeholder text and remove the preview image
+        placeholderText.style.display = 'block';
+        previewContainer.innerHTML = '';
     }
+    }
+document.getElementById('id_picture').addEventListener('change', previewImage);
 
     // Attach the image preview function to the file input change event
-    document.getElementById('id_picture').addEventListener('change', previewImage);
+    $(document).ready(function() {
+    // Password matching check
+    $('#id_password, #confirmPassword').on('input', function() {
+        const password = $('#id_password').val();
+        const confirmPassword = $('#confirmPassword').val();
+        const passwordMatchMessage = $('#passwordMatchMessage');
+        const submitBtn = $('#submitBtn');
+
+        // Enable the button if both fields are empty
+        if (!password && !confirmPassword) {
+            passwordMatchMessage.text(''); // Clear message if both fields are empty
+            submitBtn.prop('disabled', false); // Enable submit button
+            return;
+        }
+
+        if (password && confirmPassword) {
+            if (password === confirmPassword) {
+                passwordMatchMessage.text('Passwords match').css('color', 'green');
+                submitBtn.prop('disabled', false); // Enable submit button
+            } else {
+                passwordMatchMessage.text('Passwords do not match').css('color', 'red');
+                submitBtn.prop('disabled', true); // Disable submit button
+            }
+        } else {
+            passwordMatchMessage.text(''); // Clear message if one field is empty
+            submitBtn.prop('disabled', true); // Disable submit button
+        }
+    });
+});
 
 </script>
 

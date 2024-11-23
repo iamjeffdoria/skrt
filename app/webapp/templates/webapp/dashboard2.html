@@ -13,7 +13,8 @@
                         <div class="card-body d-flex align-items-center p-3">
                             <i class="fas fa-users fa-2x me-3"></i>
                             <div>
-                                <h6 class="card-title mb-1">Students</h6>
+                                <a class="card-title mb-1" href="{% url 'dashboard' %}">Students</a>
+
                                 <p class="card-text mb-0">{{ student_count }}</p>
                             </div>
                         </div>
@@ -24,7 +25,8 @@
                         <div class="card-body d-flex align-items-center p-3">
                             <i class="fas fa-chart-bar fa-2x me-3"></i>
                             <div>
-                                <h6 class="card-title mb-1">OSDS Clerk</h6>
+                                <a class="card-title mb-1 h6" href="{% url 'admin-record' %}">OSDS Clerk</a>
+
                                 <p class="card-text mb-0">{{ admin_count }}</p>
                             </div>
                         </div>
@@ -107,7 +109,12 @@
                                     {% for student in recent_students %}
                                     <tr>
                                         <td>{{ student.creation_date|date:"F j, Y" }}</td>
-                                        <td>{{ student.first_name }} {{ student.middle_name|default_if_none:'' }} {{ student.last_name }}</td>
+                                        <td>
+                                            <a href="{% url 'record' student.id %}">
+                                                {{ student.first_name }} {{ student.middle_name|default_if_none:'' }} {{ student.last_name }}
+                                            </a>
+                                        </td>
+                                        
                                         <td>{{ student.course }}</td>
                                     </tr>
                                     {% endfor %}
@@ -134,7 +141,12 @@
                                     {% for log in recent_logs %}
                                     <tr>
                                         <td>{{ log.time|date:"F j, Y, g:i A" }}</td>
-                                        <td>{{ log.student.first_name }} {{ log.student.middle_name|default_if_none:'' }} {{ log.student.last_name }}</td>
+                                        <td>
+                                            <a href="{% url 'record' log.student.id %}">
+                                                {{ log.student.first_name }} {{ log.student.middle_name|default_if_none:'' }} {{ log.student.last_name }}
+                                            </a>
+                                        </td>
+                                        
                                         <td>{{ log.type }}</td>
                                     </tr>
                                     {% endfor %}

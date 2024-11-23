@@ -32,6 +32,7 @@
                         <i class="fa fa-ellipsis-h"></i>
                     </button>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="blockDropdown">
+            
                         {% if record.status == 'Active' %}
                         <a class="dropdown-item" href="#" onclick="showBlockConfirmation('{{ record.id }}')">
                             <i class="fa fa-ban"></i> &nbsp; Block
@@ -42,9 +43,20 @@
                             <i class="fa fa-unlock"></i> &nbsp; Unblock
                         </a>
                         {% endif %}
+                        {% if record.status != 'Loss RFID' %}
+                        <a class="dropdown-item" href="#" onclick="updateStatus('{{ record.id }}', 'loss_rfid')">
+                            <i class="fa fa-exclamation-triangle"></i> &nbsp; Mark as Loss RFID
+                        </a>
+                        {% endif %}
+                        {% if record.status == 'Loss RFID' %}
+                        <a class="dropdown-item" href="#" onclick="updateStatus('{{ record.id }}', 'unmark_loss_rfid')">
+                            <i class="fa fa-check-circle"></i> &nbsp; Unmark as Loss RFID
+                        </a>
+                        {% endif %}
                         <a class="dropdown-item" href="#" onclick="showExpirationModal('{{ record.id }}')">
                             <i class="fa fa-clock"></i> &nbsp; Set expiration
                         </a>
+                        
                         <a class="dropdown-item" href="{% url 'update-record' record.id %}">
                             <i class="fa fa-pencil"></i> &nbsp; Update
                         </a>
@@ -205,33 +217,42 @@
         }
     });
 
-    // Update the student's status (block/unblock)
     function updateStatus(studentId, action) {
-        const url = action === 'block' ? `/block-student/${studentId}/` : `/unblock-student/${studentId}/`;
+    let url;
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Handle the response data as needed
-            alert(data.message);
-            location.reload(); // Reload the page to see changes
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        });
+    if (action === 'block') {
+        url = `/block-student/${studentId}/`;
+    } else if (action === 'unblock') {
+        url = `/unblock-student/${studentId}/`;
+    } else if (action === 'loss_rfid') {
+        url = `/loss-rfid/${studentId}/`;
+    } else if (action === 'unmark_loss_rfid') {
+        url = `/unmark-loss-rfid/${studentId}/`;
     }
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert(data.message);
+        location.reload(); // Reload the page to reflect changes
+    })
+    .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+    });
+}
+
 
     // Show confirmation modal before blocking a student
     function showBlockConfirmation(studentId) {

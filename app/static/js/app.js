@@ -25,7 +25,22 @@ document.addEventListener("DOMContentLoaded", function () {
           } else if (data.data.type === "logout") {
             showLogoutMessage(data.data);
           }
-        } else {
+        }else if (data.message === "Reported Loss RFID") {
+          Toastify({
+              text: "Reported Loss RFID ⚠️",
+              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+              duration: 4000,
+              gravity: "top", // Toastify default options: "top" or "bottom"
+              position: "center", // Aligns it in the center horizontally
+              style: {
+                  fontSize: "25px", // Increase font size
+                  padding: "20px",  // Increase padding
+                  borderRadius: "10px", // Make it look better
+              },
+          }).showToast();
+      }
+      
+        else {
           showUnregisteredCardError();
         }
       })
@@ -55,57 +70,74 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   rfidInput.focus();  // Ensure the RFID input field has focus on load
+  const timeouts = new Map();
+
   function updateStudentInfo(studentData) {
     console.log(studentData); // Check if studentData is logged correctly
-
+  
     const profilePicture = document.querySelector(".profile-picture img");
     const studentNameElement = document.getElementById("student-name");
     const studentCourseElement = document.getElementById("student-course");
-
+  
     const completeUrl = studentData.picture;
     profilePicture.src = studentData.picture
-        ? completeUrl
-        : "https://bootdey.com/img/Content/avatar/avatar7.png";
-
+      ? completeUrl
+      : "https://bootdey.com/img/Content/avatar/avatar7.png";
+  
     const middleNameInitial = studentData.middle_name ? studentData.middle_name.charAt(0) + '.' : '';
     const suffix = studentData.suffix ? ' ' + studentData.suffix : '';
-
+  
     // Update the name and course below the profile picture
     studentNameElement.textContent = `${studentData.first_name} ${middleNameInitial} ${studentData.last_name}${suffix}`;
     studentCourseElement.textContent = studentData.course || 'No course available';
-
+  
     const profileTable = document.querySelector(".profile-table");
     profileTable.innerHTML = `
-      
-      
-        <tr>
-            <th> <ion-icon name="alarm-sharp"></ion-icon> &nbsp;TIME </th>
-        </tr>
-
-        <tr>
-         <td>${studentData.time}</td>
-        </tr>
-
-        <tr>
+      <tr>
+        <th> <ion-icon name="alarm-sharp"></ion-icon> &nbsp;TIME </th>
+      </tr>
+      <tr>
+        <td id="student-time">${studentData.time}</td>
+      </tr>
+      <tr>
         <th><ion-icon name="keypad-sharp"></ion-icon>&nbsp;TYPE </th>
-        </tr>
-
-        <tr>
-         <td>${studentData.type === "login" ? "Login" : "Logout"}</td>
-        </tr>
-
-        <tr>
-         <th> <ion-icon name="calendar-sharp"></ion-icon>&nbsp;DATE </th>
-        </tr>
-
-        <tr>
-            <td>${studentData.date}</td>
-        </tr>
+      </tr>
+      <tr>
+        <td id="student-type">${studentData.type === "login" ? "Login" : "Logout"}</td>
+      </tr>
+      <tr>
+        <th> <ion-icon name="calendar-sharp"></ion-icon>&nbsp;DATE </th>
+      </tr>
+      <tr>
+        <td id="student-date">${studentData.date}</td>
+      </tr>
     `;
-
+  
+    // Clear any existing timeout for this student and set a new one
+    if (timeouts.has(studentData.id)) {
+      clearTimeout(timeouts.get(studentData.id));
+    }
+  
+    // Set a 15-second timeout for this student to reset their info
+    const timeoutId = setTimeout(() => {
+      profilePicture.src = "https://bootdey.com/img/Content/avatar/avatar7.png";
+      studentNameElement.textContent = "-------";
+      studentCourseElement.textContent = "--------";
+      document.getElementById("student-time").textContent = "-----";
+      document.getElementById("student-type").textContent = "-----";
+      document.getElementById("student-date").textContent = "-----";
+  
+      // Remove this student's timeout from the map once it has executed
+      timeouts.delete(studentData.id);
+    }, 15000);
+  
+    // Store the new timeout ID in the map for this student
+    timeouts.set(studentData.id, timeoutId);
+  
     rfidInput.value = "";
     rfidInput.focus();
-}
+  }
+  
 
 function updateRecentLogs(logs) {
   miniTableBody.innerHTML = ''; // Clear the mini table body
@@ -121,6 +153,8 @@ function updateRecentLogs(logs) {
       `;
       miniTableBody.appendChild(row); // Append the row to the mini table
   });
+     
+   
 }
 
 

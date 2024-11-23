@@ -57,7 +57,6 @@
     {% endif %}
 </div>
 
-<!-- Student Details Modal -->
 <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -66,9 +65,54 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="studentDetailsContent" class="text-center">
-                    <!-- Dynamic content will be loaded here -->
-                    Loading details...
+                <div class="row">
+                    <!-- Profile Picture -->
+                    <div class="col-md-4 d-flex align-items-center justify-content-center">
+                        <div id="studentProfilePicture">
+                            <!-- Profile picture placeholder -->
+                            <img src="https://via.placeholder.com/150" 
+                                 alt="Profile Picture" 
+                                 class="img-fluid rounded-circle border"
+                                 style="max-width: 150px;">
+                        </div>
+                    </div>
+
+                    <!-- Student Details -->
+                    <div class="col-md-8">
+                        <table class="table table-bordered table-sm">
+                            <tbody>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <td id="studentId">Loading...</td>
+                                </tr>
+                              
+                                <tr>
+                                    <th>Username</th>
+                                    <td id="studentUsername">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td id="studentEmail">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <th>Course</th>
+                                    <td id="studentCourse">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <th>Major</th>
+                                    <td id="studentMajor">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <th>Registration Date</th>
+                                    <td id="studentDate">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td id="studentStatus">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -77,6 +121,7 @@
         </div>
     </div>
 </div>
+
 
 <style>
     /* Adjustments for a professional design */
@@ -125,45 +170,53 @@
 
     // Load student details function
     function loadStudentDetails(studentId) {
-        const studentDetailsContent = document.getElementById('studentDetailsContent');
-        studentDetailsContent.innerHTML = `Loading details for student ID: ${studentId}...`;
+        const profilePicture = document.getElementById('studentProfilePicture');
+        const studentIdField = document.getElementById('studentId');
+        const studentNameField = document.getElementById('studentName');
+        const studentUsernameField = document.getElementById('studentUsername');
+        const studentEmailField = document.getElementById('studentEmail');
+        const studentCourseField = document.getElementById('studentCourse');
+        const studentMajorField = document.getElementById('studentMajor');
+        const studentDateField = document.getElementById('studentDate');
+        const studentStatusField = document.getElementById('studentStatus');
+
+        profilePicture.innerHTML = '<p>Loading picture...</p>';
 
         fetch(`/student-details/${studentId}/`)
-            .then(response => response.json())
-            .then(data => {
-                const profileImage = data.picture ? 
-    `<img src="${data.picture}" alt="Profile Picture" class="img-fluid rounded-circle" style="max-width: 150px; max-height: 150px;">` 
-    : '<p>No picture available</p>';
-
-                studentDetailsContent.innerHTML = `
-                    <div class="student-details-card">
-                        <div class="mb-4">
-                            ${profileImage}
-                        </div>
-                        <dl class="row">
-                            <dt class="col-sm-4">Student ID:</dt>
-                            <dd class="col-sm-8">${data.student_id}</dd>
-                            <dt class="col-sm-4">Name:</dt>
-                            <dd class="col-sm-8">${data.first_name} ${data.middle_name ? data.middle_name + ' ' : ''}${data.last_name} ${data.suffix ? data.suffix : ''}</dd>
-                            <dt class="col-sm-4">Username:</dt>  <!-- New field -->
-                            <dd class="col-sm-8">${data.username}</dd>  <!-- New field -->
-                            <dt class="col-sm-4">Email:</dt>
-                            <dd class="col-sm-8">${data.email || 'Not provided'}</dd>
-                            <dt class="col-sm-4">Course:</dt>
-                            <dd class="col-sm-8">${data.course || 'Not provided'}</dd>
-                            <dt class="col-sm-4">Major:</dt>
-                            <dd class="col-sm-8">${data.major || 'Not provided'}</dd>
-                            <dt class="col-sm-4">Registration Date:</dt>
-                            <dd class="col-sm-8">${data.creation_date}</dd>
-                            <dt class="col-sm-4">Status:</dt>
-                            <dd class="col-sm-8">${data.status}</dd>
-                        </dl>
+    .then(response => response.json())
+    .then(data => {
+        profilePicture.innerHTML = data.picture
+            ? `
+                <div style="text-align: center;">
+                    <img src="${data.picture}" alt="Profile Picture" class="img-fluid" style="max-width: 180px; height: auto; border: 4px solid #007bff; display: block; margin: auto; cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease;" 
+                        onmouseover="this.style.borderColor='#0056b3'; this.style.transform='scale(1.05)';" 
+                        onmouseout="this.style.borderColor='#007bff'; this.style.transform='scale(1)';">
+                    <div style="margin-top: 10px; background-color: #003366; padding: 10px 15px; border-radius: 12px; display: inline-block;">
+                        <h5 style="font-family: 'Poppins', sans-serif; color: white; font-weight: 600; font-size: 18px; margin: 0;">${data.first_name} ${data.middle_name || ''} ${data.last_name} ${data.suffix || ''}</h5>
+                        <p style="font-family: 'Poppins', sans-serif; color: white; font-weight: 400; font-size: 14px; margin: 0;">Student</p>
                     </div>
-                `;
-            })
+                </div>`
+            : '<p style="text-align: center; color: #6c757d;">No picture available</p>';
+
+        studentIdField.textContent = data.student_id;
+        studentUsernameField.textContent = data.username || 'Not provided';
+        studentEmailField.textContent = data.email || 'Not provided';
+        studentCourseField.textContent = data.course || 'Not provided';
+        studentMajorField.textContent = data.major || 'Not provided';
+        studentDateField.textContent = data.creation_date;
+        studentStatusField.textContent = data.status;
+    })
             .catch(error => {
                 console.error('Error fetching student details:', error);
-                studentDetailsContent.innerHTML = '<p>Error loading student details.</p>';
+                profilePicture.innerHTML = '<p>Error loading picture.</p>';
+                studentIdField.textContent = 'Error loading data.';
+                studentNameField.textContent = 'Error loading data.';
+                studentUsernameField.textContent = 'Error loading data.';
+                studentEmailField.textContent = 'Error loading data.';
+                studentCourseField.textContent = 'Error loading data.';
+                studentMajorField.textContent = 'Error loading data.';
+                studentDateField.textContent = 'Error loading data.';
+                studentStatusField.textContent = 'Error loading data.';
             });
     }
 </script>

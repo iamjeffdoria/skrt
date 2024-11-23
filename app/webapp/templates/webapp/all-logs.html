@@ -54,7 +54,21 @@
                     <label for="time_frame"><i class="fas fa-clock me-2"></i>Time Frame</label>
                 </div>
             </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="form-floating">
+                    <input type="date" id="start_date" name="start_date" class="form-control custom-input" value="{{ request.GET.start_date }}">
+                    <label for="start_date"><i class="fas fa-calendar-alt me-2"></i>Start Date</label>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="form-floating">
+                    <input type="date" id="end_date" name="end_date" class="form-control custom-input" value="{{ request.GET.end_date }}">
+                    <label for="end_date"><i class="fas fa-calendar-alt me-2"></i>End Date</label>
+                </div>
+            </div>
+            
         </div>
+        
     </form>
     <a href="{% url 'download-logs-pdf' %}?log_type={{ request.GET.log_type }}&date={{ request.GET.date }}&course={{ request.GET.course }}&major={{ request.GET.major }}&time_frame={{ request.GET.time_frame }}" class="btn btn-primary">
         <ion-icon name="download-outline"></ion-icon> Download PDF
@@ -75,7 +89,11 @@
             <tbody>
                 {% for log in logs %}
                     <tr>
-                        <td>{{ log.student.first_name }} {{ log.student.middle_name|default:'' }} {{ log.student.last_name }} {{ log.student.suffix|default:'' }}</td>
+                        <td>
+                            <a href="{% url 'record' log.student.id %}">
+                                {{ log.student.first_name }} {{ log.student.middle_name|default:'' }} {{ log.student.last_name }} {{ log.student.suffix|default:'' }}
+                            </a>
+                        </td>
                         <td>{{ log.student.course }}</td>
                         <td>{{ log.student.major }}</td>
                         <td>
@@ -106,8 +124,7 @@
 <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Trigger filtering on dropdown change or date input
-    $('#log_type, #date, #course, #major, #time_frame').on('change', function() {
+    $('#log_type, #date, #course, #major, #time_frame, #start_date, #end_date').on('change', function() {
         $('#filterForm').submit(); // Submit the form to apply filters automatically
     });
 

@@ -66,6 +66,9 @@ urlpatterns = [
     path('check-username-availability/', views.check_username_availability, name='check_username_availability'),
     path('check-student-id-availability/', views.check_student_id_availability, name='check_student_id_availability'),
     path('check_email_availability/', views.check_email_availability, name='check_email_availability'),
+    path('loss-rfid/<int:student_id>/', views.mark_loss_rfid, name='mark-loss-rfid'),
+    path('unmark-loss-rfid/<int:student_id>/', views.unmark_loss_rfid, name='unmark-loss-rfid'),
+   
 ] 
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

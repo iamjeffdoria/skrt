@@ -67,7 +67,31 @@ from django.conf import settings
 from django.db.models import Q
 import os
 
-@login_required(login_url='unified-login')
+
+def mark_loss_rfid(request, student_id):
+    if request.method == 'POST':
+        try:
+            student = get_object_or_404(studRec, id=student_id)
+            student.status = "Loss RFID"
+            student.save()
+            return JsonResponse({'message': 'RFID marked as lost successfully!'})
+        except Exception as e:
+            return JsonResponse({'message': str(e)}, status=500)
+    return JsonResponse({'message': 'Invalid request method.'}, status=400)
+
+def unmark_loss_rfid(request, student_id):
+    if request.method == 'POST':
+        try:
+            student = get_object_or_404(studRec, id=student_id)
+            if student.status == "Loss RFID":
+                student.status = "Active"  # Assuming "Active" is the default restored status
+                student.save()
+                return JsonResponse({'message': 'RFID unmarked as lost successfully!'})
+            return JsonResponse({'message': 'Student is not marked as Loss RFID.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'message': str(e)}, status=500)
+    return JsonResponse({'message': 'Invalid request method.'}, status=400)
+
 def download_logs_pdf(request):
     # Retrieve filters from the request
     log_type = request.GET.get('log_type', '')
@@ -262,7 +286,6 @@ def unified_login(request):
     return render(request, 'webapp/unified-login.html', context)
 
 
-@login_required(login_url='unified-login')
 def head_dashboard(request):
     recent_students = studRec.objects.all().order_by('-creation_date')[:3]
     student_count = studRec.objects.count()
@@ -391,6 +414,9 @@ def process_rfid(request):
                 }
 
                 return JsonResponse({'status': 'success', 'data': response_data})
+            elif student.status == 'Loss RFID':
+                # Return specific error for Loss RFID
+                return JsonResponse({'status': 'error', 'message': 'Reported Loss RFID'})
             else:
                 return JsonResponse({'status': 'error', 'message': 'Student is inactive'})
         return JsonResponse({'status': 'error', 'message': 'Student not found'})
@@ -419,7 +445,7 @@ def home(request):
 #Students logs
 
 
-@login_required(login_url='unified-login')
+
 def view_student_logs(request, student_id):
     # Retrieve the student by their student_id
     student = get_object_or_404(studRec, student_id=student_id)
@@ -599,8 +625,16 @@ def student_dashboard(request):
 
 #dashboard/SEARCH
 
-@login_required(login_url='unified-login')
+
 def dashboard(request):
+     # Only allow access to head of security and OSDS users
+    user_type = request.session.get('user_type')
+    if user_type != 'head_of_security' and user_type != 'admin':
+        # Redirect students or unauthorized users
+        if user_type == 'student':
+            return redirect('stud-dash')
+        else:
+            return redirect('unified-login')  # Or another appropriate view for unauthorized access
     # Fetch all available courses and majors for dropdowns
     courses = studRec.objects.values_list('course', flat=True).distinct()
     majors = studRec.objects.values_list('major', flat=True).distinct()
@@ -647,16 +681,19 @@ def dashboard(request):
     except EmptyPage:
         records = paginator.get_page(1)  # Fallback to the first page in case of invalid page number
 
+    filtered_count = my_records.count()
     context = {
         'records': records,
         'courses': courses,
         'majors': majors,
         'entries': entries_per_page,
         'paginator': paginator,
+        'filtered_count': filtered_count, 
     }
     return render(request, 'webapp/dashboard.html', context=context)
 
-@login_required(login_url='unified-login')
+
+
 def search_records(request):
     query = request.GET.get('q', '')
     course = request.GET.get('course', '')
@@ -699,7 +736,9 @@ def search_records(request):
 
 # Create a record
 
-@login_required(login_url='unified-login')
+
+
+
 def create_record(request):
     if request.method == 'POST':
         form = CreateRecordForm(request.POST, request.FILES)
@@ -744,7 +783,7 @@ def create_record(request):
     return render(request, 'webapp/create-record.html', {'form': form})
         
 # Update Record
-@login_required(login_url='unified-login')
+
 def update_record(request, pk):
     record = get_object_or_404(studRec, pk=pk)  # Retrieve the record using the primary key (pk)
     
@@ -782,7 +821,7 @@ def update_record(request, pk):
 # View a record
 
 
-@login_required(login_url='unified-login')
+
 def view_record(request, pk):
         
         all_records = studRec.objects.get(id=pk)
@@ -794,7 +833,7 @@ def view_record(request, pk):
 
 #Delete a record 
 
-@login_required(login_url='unified-login')
+
 def delete_record(request, pk):
     if request.method == 'POST':
         record = get_object_or_404(studRec, id=pk)
@@ -807,7 +846,7 @@ def delete_record(request, pk):
 
 # View admin lists
 
-@login_required(login_url='unified-login')
+
 def view_admin(request):
     # Retrieve all users with their profiles
     users_list = User.objects.select_related('userprofile').all()
@@ -937,7 +976,7 @@ def head_logout(request):
         messages.success(request, "Logged out.")
         return redirect('unified-login')
             
-@login_required(login_url='unified-login')
+
 def block_student(request, pk):
     student = get_object_or_404(studRec, pk=pk)
     student.status = 'Inactive'
@@ -946,7 +985,8 @@ def block_student(request, pk):
 
     return JsonResponse({'status': 'success', 'message': 'Student blocked'})
 
-@login_required(login_url='unified-login')
+
+
 def unblock_student(request, pk):
     student = get_object_or_404(studRec, pk=pk)
     student.status = 'Active'
@@ -999,9 +1039,7 @@ def sidebar_view(request):
     return render(request, 'webapp/navbar.html', {'student_record': student_record})
 
 
-
 def view_own_logs(request):
-
     if request.user.is_authenticated:
         return redirect('dashboard-real')
     
@@ -1015,6 +1053,7 @@ def view_own_logs(request):
     total_logout = 0
     page_obj = None
     entries_str = request.GET.get('entries', '')  # Default to empty string if not specified
+    time_frame = request.GET.get('time_frame', '')
 
     if student_id:
         try:
@@ -1028,7 +1067,18 @@ def view_own_logs(request):
             total_login = logs.filter(type='login').count()
             total_logout = logs.filter(type='logout').count()
 
-            # Date filtering
+            # Time frame filtering
+            if time_frame == "this_day":
+                today = datetime.today().date()
+                logs = logs.filter(time__date=today)
+            elif time_frame == "this_week":
+                start_of_week = datetime.today() - timedelta(days=datetime.today().weekday())
+                logs = logs.filter(time__date__gte=start_of_week.date())
+            elif time_frame == "this_month":
+                start_of_month = datetime.today().replace(day=1)
+                logs = logs.filter(time__date__gte=start_of_month.date())
+
+            # Date filtering (same as before)
             start_date = request.GET.get('start_date')
             end_date = request.GET.get('end_date')
 
@@ -1079,9 +1129,9 @@ def view_own_logs(request):
         'total_login': total_login,
         'total_logout': total_logout,
         'page_obj': page_obj,
-        'entries_str': entries_str  # Pass entries string to the template for dropdown control
+        'entries_str': entries_str,  # Pass entries string to the template for dropdown control
+        'time_frame': time_frame  # Pass the selected time frame
     })
-
 
 def student_request(request):
     
@@ -1181,8 +1231,15 @@ def get_attendance_data(request):
         return JsonResponse({'error': 'Month parameter is required'}, status=400)
 
 
-@login_required(login_url='unified-login')
+
 def all_logs(request):
+    user_type = request.session.get('user_type')
+    if user_type != 'head_of_security' and user_type != 'admin':
+        # Redirect students or unauthorized users
+        if user_type == 'student':
+            return redirect('stud-dash')
+        else:
+            return redirect('unified-login')
     
     # Get filter parameters from the request
     log_type = request.GET.get('log_type', '')
@@ -1190,7 +1247,9 @@ def all_logs(request):
     course = request.GET.get('course', '')
     major = request.GET.get('major', '')
     time_frame = request.GET.get('time_frame', '')
-
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+   
     filters = Q()
 
     # Filter by log type if selected
@@ -1222,6 +1281,15 @@ def all_logs(request):
         filters &= Q(time__date__range=[start_of_week, today])
     elif time_frame == 'this_month':
         filters &= Q(time__year=today.year, time__month=today.month)
+
+     # Filter by start date and end date if both are provided
+    if start_date and end_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            filters &= Q(time__date__range=[start_date_obj, end_date_obj])
+        except ValueError:
+            pass  # Ignore invalid date formats
 
     # Retrieve all logs based on filters
     all_logs = AttendanceLog.objects.filter(filters)
@@ -1270,7 +1338,6 @@ def all_logs(request):
         'course_choices': course_choices,
         'major_choices': major_choices,
     })
-
 
 def student_details(request, student_id):
     try:
