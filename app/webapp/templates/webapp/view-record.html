@@ -122,21 +122,21 @@
     </div>
 
   <!-- Charts Section -->
-<div class="mt-4">
+<!-- <div class="mt-4">
     <div class="row justify-content-center">
-        <!-- Histogram -->
+      
         <div class="col-md-6 mb-3">
             <h5 class="text-center">Histogram of Attendance</h5>
             <canvas id="attendanceHistogram" width="600" height="400" style="max-width: 100%;"></canvas>
         </div>
 
-        <!-- Pie Chart -->
+    
         <div class="col-md-4 mb-3">
             <h5 class="text-center">Attendance Status Distribution</h5>
             <canvas id="attendancePieChart" width="400" height="300" style="max-width: 100%;"></canvas>
         </div>
     </div>
-</div>
+</div> -->
 
 
 <!-- Include Chart.js -->
@@ -145,77 +145,77 @@
 <script>
     // Example data for the histogram
    // Example data for the histogram
-   const attendanceData = {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-        datasets: [{
-            label: 'Attendance',
-            data: [12, 19, 3, 5, 2],
-            backgroundColor: 'rgba(0, 123, 255, 1)',  // More intense blue
-            borderColor: 'rgba(0, 123, 255, 1)',      // Same intensity for the border
-            borderWidth: 2                            // Thicker border
-        }]
-    };
+//    const attendanceData = {
+//         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+//         datasets: [{
+//             label: 'Attendance',
+//             data: [12, 19, 3, 5, 2],
+//             backgroundColor: 'rgba(0, 123, 255, 1)',  // More intense blue
+//             borderColor: 'rgba(0, 123, 255, 1)',      // Same intensity for the border
+//             borderWidth: 2                            // Thicker border
+//         }]
+//     };
 
-    const ctxHistogram = document.getElementById('attendanceHistogram').getContext('2d');
-    const attendanceHistogram = new Chart(ctxHistogram, {
-        type: 'bar',
-        data: attendanceData,
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Attendances'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Days of the Week'
-                    }
-                }
-            }
-        }
-    });
+//     const ctxHistogram = document.getElementById('attendanceHistogram').getContext('2d');
+//     const attendanceHistogram = new Chart(ctxHistogram, {
+//         type: 'bar',
+//         data: attendanceData,
+//         options: {
+//             scales: {
+//                 y: {
+//                     beginAtZero: true,
+//                     title: {
+//                         display: true,
+//                         text: 'Number of Attendances'
+//                     }
+//                 },
+//                 x: {
+//                     title: {
+//                         display: true,
+//                         text: 'Days of the Week'
+//                     }
+//                 }
+//             }
+//         }
+//     });
 
-    // Example data for the pie chart with intense colors
-    const pieData = {
-        labels: ['Present', 'Absent', 'Late'],
-        datasets: [{
-            label: 'Attendance Status',
-            data: [60, 30, 10],
-            backgroundColor: [
-                'rgba(0, 123, 255, 1)', // More intense blue
-                'rgba(255, 0, 0, 1)',   // Very red
-                'rgba(255, 193, 7, 1)'  // Intense yellow
-            ],
-            borderColor: [
-                'rgba(0, 123, 255, 1)', // Matching the intense blue
-                'rgba(255, 0, 0, 1)',   // Matching intense red
-                'rgba(255, 193, 7, 1)'  // Matching yellow
-            ],
-            borderWidth: 2              // Thicker border
-        }]
-    };
+//     // Example data for the pie chart with intense colors
+//     const pieData = {
+//         labels: ['Present', 'Absent', 'Late'],
+//         datasets: [{
+//             label: 'Attendance Status',
+//             data: [60, 30, 10],
+//             backgroundColor: [
+//                 'rgba(0, 123, 255, 1)', // More intense blue
+//                 'rgba(255, 0, 0, 1)',   // Very red
+//                 'rgba(255, 193, 7, 1)'  // Intense yellow
+//             ],
+//             borderColor: [
+//                 'rgba(0, 123, 255, 1)', // Matching the intense blue
+//                 'rgba(255, 0, 0, 1)',   // Matching intense red
+//                 'rgba(255, 193, 7, 1)'  // Matching yellow
+//             ],
+//             borderWidth: 2              // Thicker border
+//         }]
+//     };
 
-    const ctxPie = document.getElementById('attendancePieChart').getContext('2d');
-    const attendancePieChart = new Chart(ctxPie, {
-        type: 'pie',
-        data: pieData,
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Attendance Status Distribution'
-                }
-            }
-        }
-    });
+//     const ctxPie = document.getElementById('attendancePieChart').getContext('2d');
+//     const attendancePieChart = new Chart(ctxPie, {
+//         type: 'pie',
+//         data: pieData,
+//         options: {
+//             responsive: true,
+//             plugins: {
+//                 legend: {
+//                     position: 'top',
+//                 },
+//                 title: {
+//                     display: true,
+//                     text: 'Attendance Status Distribution'
+//                 }
+//             }
+//         }
+//     });
 
     function updateStatus(studentId, action) {
     let url;

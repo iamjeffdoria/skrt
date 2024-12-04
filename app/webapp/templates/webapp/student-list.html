@@ -1,0 +1,91 @@
+{% extends 'webapp/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-0 bg-white">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-uppercase">Student List</h2>
+        <a href="{% url 'create-record' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Add Record
+        </a>
+    </div>
+
+    <div class="table-responsive shadow-sm rounded border">
+        <table id="studentTable" class="table table-hover table-sm align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th class="text-center">#</th>
+                    <th>Picture</th>
+                    <th>Student ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Course</th>
+                    <th>Major</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td class="text-center">{{ student.id }}</td>
+                    <td class="text-center">
+                        {% if student.picture %}
+                            <img src="{{ student.picture.url }}" alt="{{ student.first_name }} {{ student.last_name }}" class="rounded-circle" width="40" height="40">
+                        {% else %}
+                            <img src="{% static 'webapp/default-avatar.png' %}" alt="Default Avatar" class="rounded-circle" width="40" height="40">
+                        {% endif %}
+                    </td>
+                    <td>{{ student.student_id }}</td>
+                    <td>{{ student.first_name }}</td>
+                    <td>{{ student.last_name }}</td>
+                    <td>{{ student.course }}</td>
+                    <td>{{ student.major }}</td>
+                    <td>
+                        {% if student.status == 'Active' %}
+                            <span class="badge bg-success">{{ student.status }}</span>
+                        {% elif student.status == 'Inactive' %}
+                            <span class="badge bg-danger">{{ student.status }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ student.status }}</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'record' student.id %}" class="btn btn-info btn-sm" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button class="btn btn-warning btn-sm" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#studentTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            columnDefs: [
+                { orderable: false, targets: [8] } // Disable ordering for the 'Actions' column
+            ],
+            language: {
+                search: "Filter records:",
+                lengthMenu: "Show _MENU_ entries"
+            }
+        });
+    });
+</script>
+{% endblock %}

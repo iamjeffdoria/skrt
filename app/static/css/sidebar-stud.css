@@ -1,47 +1,43 @@
-/* Navbar Styling */
-.navbar {
-    background: linear-gradient(135deg, #121212, #1c1c1c); /* Subtle gradient for a professional feel */
-    border-bottom: 1px solid #444; /* Refined border */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8); /* Deeper shadow for more depth */
-    font-family: 'Poppins', serif; /* Poppins serif */
+  /* Navbar Styling */
+  .navbar {
+    background: linear-gradient(135deg, #121212, #1c1c1c);
+    border-bottom: 1px solid #444;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+    font-family: 'Poppins', serif;
 }
 
-/* Logo and Branding */
 .navbar-brand {
     font-size: 1.5rem;
-    font-weight: 500; /* Semi-bold for a strong presence */
-    color: #fff; /* White text */
+    font-weight: 500;
+    color: #fff;
 }
 
 .navbar-brand .logo {
     width: 50px;
     height: 50px;
-    margin-right: 12px; /* Increased margin for better spacing */
+    margin-right: 12px;
 }
 
-/* Toggler Styling */
 .navbar-toggler {
     border: 1px solid #555;
 }
 
 .navbar-toggler-icon {
-    background-image: linear-gradient(135deg, #444, #888); /* Subtle gradient for the toggler icon */
+    background-image: linear-gradient(135deg, #444, #888);
 }
 
-/* Navbar Links */
 .navbar-nav .nav-link {
-    font-size: 1.1rem; /* Larger font for better readability */
+    font-size: 1.1rem;
     padding: 0.6rem 1.2rem;
     color: #ccc;
     transition: color 0.4s ease, background-color 0.4s ease;
 }
 
 .navbar-nav .nav-link:hover {
-    color: #f0f0f0; /* Lighter white on hover */
-    background-color: #333; /* Darker background on hover */
+    color: #f0f0f0;
+    background-color: #333;
 }
 
-/* Logout Button Styling */
 .logout-btn {
     color: #ccc;
     transition: color 0.4s ease, background-color 0.4s ease;
@@ -51,7 +47,55 @@
     color: #f0f0f0;
 }
 
-/* Loading Animation (Professional, Minimal) */
+/* Sidebar Styling */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px;
+    background: linear-gradient(135deg, #121212, #1c1c1c);
+    border-right: 1px solid #444;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.8);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1040;
+}
+
+.sidebar.active {
+    transform: translateX(0);
+}
+
+.sidebar .nav-link {
+    font-size: 1.1rem;
+    color: #ccc;
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+    transition: color 0.4s ease, background-color 0.4s ease;
+}
+
+.sidebar .nav-link:hover {
+    color: #f0f0f0;
+    background-color: #333;
+}
+
+.sidebar-toggle {
+    cursor: pointer;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+/* Content Styling */
+.content {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+}
+
+.content.sidebar-active {
+    margin-left: 250px;
+}
+
+/* Loading Animation */
 .loading-container {
     position: absolute;
     top: 50%;

@@ -9,7 +9,7 @@ from .views import registration_data
 from .views import get_attendance_data
 from .views import student_details
 from .views import all_logs, download_logs_pdf
-from .views import activate_account
+from .views import activate_account,student_attendance_chart
 
 urlpatterns = [
     path('all-logs/', all_logs, name='all-logs'),
@@ -60,14 +60,14 @@ urlpatterns = [
     path('get-attendance-data/', get_attendance_data, name='get_attendance_data'),
     path('all-logs', views.all_logs, name='all-logs'),
     path('student-details/<int:student_id>/', student_details, name='student-details'),
- 
     path('activate-account/<int:student_id>/', activate_account, name='activate-account'),
-    
     path('check-username-availability/', views.check_username_availability, name='check_username_availability'),
     path('check-student-id-availability/', views.check_student_id_availability, name='check_student_id_availability'),
     path('check_email_availability/', views.check_email_availability, name='check_email_availability'),
     path('loss-rfid/<int:student_id>/', views.mark_loss_rfid, name='mark-loss-rfid'),
     path('unmark-loss-rfid/<int:student_id>/', views.unmark_loss_rfid, name='unmark-loss-rfid'),
+    path('student-list/', views.student_list, name='student-list'),
+    path('attendance-chart/<int:student_id>/', student_attendance_chart, name='attendance_chart'),
    
 ] 
 

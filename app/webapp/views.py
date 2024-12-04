@@ -67,6 +67,18 @@ from django.conf import settings
 from django.db.models import Q
 import os
 
+def student_list(request):
+      # Only allow access to head of security and OSDS users
+    user_type = request.session.get('user_type')
+    if user_type != 'head_of_security' and user_type != 'admin':
+        # Redirect students or unauthorized users
+        if user_type == 'student':
+            return redirect('stud-dash')
+        else:
+            return redirect('unified-login')
+    students = studRec.objects.all()
+    context = {'students': students}
+    return render(request, 'webapp/student-list.html', context)
 
 def mark_loss_rfid(request, student_id):
     if request.method == 'POST':
@@ -446,70 +458,158 @@ def home(request):
 
 
 
+
+# def view_student_logs(request, student_id):
+#     # Retrieve the student by their student_id
+#     student = get_object_or_404(studRec, student_id=student_id)
+
+#     # Get all logs for this student, ordered by time (latest to oldest)
+#     logs = AttendanceLog.objects.filter(student=student).order_by('-time')
+
+#     # Calculate total login and logout counts
+#     total_login = logs.filter(type='login').count()
+#     total_logout = logs.filter(type='logout').count()
+
+#     # Date filtering
+#     start_date = request.GET.get('start_date')
+#     end_date = request.GET.get('end_date')
+
+#     # Convert date strings to date objects
+#     try:
+#         if start_date:
+#             start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+#         if end_date:
+#             end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+#     except ValueError:
+#         messages.error(request, 'Invalid date format.')
+#         start_date = None
+#         end_date = None
+
+#     # Apply filters
+#     if start_date and end_date:
+#         logs = logs.filter(time__date__range=[start_date, end_date])
+#     elif start_date:
+#         logs = logs.filter(time__date=start_date)
+#     elif end_date:
+#         logs = logs.filter(time__date=end_date)
+
+#     # Pagination
+#     entries_str = request.GET.get('entries', '')  # Default to empty string if not specified
+#     if entries_str == 'all':
+#         entries_per_page = None  # This means no pagination, show all records
+#     else:
+#         try:
+#             entries_per_page = int(entries_str)
+#             if entries_per_page <= 0:
+#                 entries_per_page = 10  # Fallback default value
+#         except ValueError:
+#             entries_per_page = 10  # Fallback default value
+
+#     if entries_per_page:
+#         paginator = Paginator(logs, entries_per_page)
+#         page_number = request.GET.get('page')
+#         page_obj = paginator.get_page(page_number)
+#     else:
+#         page_obj = logs  # If "All" is selected, no pagination
+
+#     context = {
+#         'student': student,
+#         'logs': page_obj,  # Pass the page object to the template
+#         'total_login': total_login,
+#         'total_logout': total_logout,
+#         'page_obj': page_obj,  # Needed for pagination controls if not "all"
+#         'entries_str': entries_str  # Pass entries string to the template for dropdown control
+#     }
+
+#     return render(request, 'webapp/student-logs.html', context)
+
+
+def student_attendance_chart(request, student_id):
+    student = get_object_or_404(studRec, pk=student_id)
+    today = now().date()
+    start_of_week = today - timedelta(days=today.weekday())  # Monday of the current week
+
+    # Get attendance logs for the current week
+    attendance_logs = AttendanceLog.objects.filter(
+        student=student,
+        date_in__gte=start_of_week
+    )
+
+    # Prepare data for chart
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    login_data = [0] * 7
+    logout_data = [0] * 7
+
+    for log in attendance_logs:
+        if log.date_in:
+            day_index = (log.date_in.weekday())  # Monday = 0, Sunday = 6
+            if log.type == 'login':
+                login_data[day_index] += 1
+            elif log.type == 'logout':
+                logout_data[day_index] += 1
+
+    return JsonResponse({
+        "days": days,
+        "logins": login_data,
+        "logouts": logout_data
+    })
+
+
 def view_student_logs(request, student_id):
-    # Retrieve the student by their student_id
     student = get_object_or_404(studRec, student_id=student_id)
-
-    # Get all logs for this student, ordered by time (latest to oldest)
     logs = AttendanceLog.objects.filter(student=student).order_by('-time')
+    print(student.first_name)
 
-    # Calculate total login and logout counts
-    total_login = logs.filter(type='login').count()
-    total_logout = logs.filter(type='logout').count()
+        # Handle AJAX request for filtering
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'GET':
+        time_frame = request.GET.get('time_frame')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
 
-    # Date filtering
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-
-    # Convert date strings to date objects
-    try:
+        if time_frame == "today":
+            start_date = now().date()
+            logs = logs.filter(date_in=start_date)
+        elif time_frame == "week":
+            start_date = now() - timedelta(days=now().weekday())
+            logs = logs.filter(date_in__gte=start_date)
+        elif time_frame == "month":
+            start_date = now().replace(day=1)
+            logs = logs.filter(date_in__gte=start_date)
+        
+        # Filter by start and end date if provided
         if start_date:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            logs = logs.filter(date_in__gte=start_date)
         if end_date:
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-    except ValueError:
-        messages.error(request, 'Invalid date format.')
-        start_date = None
-        end_date = None
+            logs = logs.filter(date_in__lte=end_date)
+        
+        
 
-    # Apply filters
-    if start_date and end_date:
-        logs = logs.filter(time__date__range=[start_date, end_date])
-    elif start_date:
-        logs = logs.filter(time__date=start_date)
-    elif end_date:
-        logs = logs.filter(time__date=end_date)
-
-    # Pagination
-    entries_str = request.GET.get('entries', '')  # Default to empty string if not specified
-    if entries_str == 'all':
-        entries_per_page = None  # This means no pagination, show all records
-    else:
-        try:
-            entries_per_page = int(entries_str)
-            if entries_per_page <= 0:
-                entries_per_page = 10  # Fallback default value
-        except ValueError:
-            entries_per_page = 10  # Fallback default value
-
-    if entries_per_page:
-        paginator = Paginator(logs, entries_per_page)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-    else:
-        page_obj = logs  # If "All" is selected, no pagination
+       
+        # Format the response while handling None values
+        return JsonResponse({
+            'logs': [
+                {
+                    'type': log.type,
+                    'date_in': log.date_in.strftime("%b %d, %Y") if log.date_in else 'Not Available',
+                    'date_out': log.date_out.strftime("%b %d, %Y") if log.date_out else 'Not Available',
+                    'time': log.time.strftime("%I:%M %p") if log.time else 'Not Available',
+                    'note': log.note or 'No Note'
+                }
+                for log in logs
+            ],
+              
+        })
+    # Prepare context for rendering
+    for log in logs:
+        log.formatted_date_in = log.date_in.strftime("%b %d, %Y") if log.date_in else "Not Available"
+        log.formatted_date_out = log.date_out.strftime("%b %d, %Y") if log.date_out else "Not Available"
 
     context = {
         'student': student,
-        'logs': page_obj,  # Pass the page object to the template
-        'total_login': total_login,
-        'total_logout': total_logout,
-        'page_obj': page_obj,  # Needed for pagination controls if not "all"
-        'entries_str': entries_str  # Pass entries string to the template for dropdown control
+        'logs': logs
+        
     }
-
     return render(request, 'webapp/student-logs.html', context)
-
 
 
 #Login a admin
