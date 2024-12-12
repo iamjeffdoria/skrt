@@ -349,6 +349,7 @@
           body {
               font-family: 'Poppins', sans-serif;
               background-color: #e5f5e3;
+              margin-left: 250px; /* Default margin when sidebar is expanded */
           }
   
           #sidebar {
@@ -360,7 +361,6 @@
               background-color: #155724;
               color: white;
               z-index: 1050;
-              transition: all 0.3s ease;
           }
   
           #sidebar.active {
@@ -390,37 +390,21 @@
               height: 50px;
           }
   
+          #sidebar .nav-link.active {
+              background-color: #28a745; /* Stronger green color */
+              color: white;
+              font-weight: bold;
+              border-left: 5px solid #ffc107; /* Optional highlight indicator */
+          }
+  
           #sidebar .nav-link i {
               margin-right: 10px;
               line-height: 1;
           }
   
-          #sidebar .nav-link span {
-              flex-grow: 1;
-              white-space: nowrap;
-              display: inline-block;
-              line-height: 1.5;
-          }
-  
           #sidebar .nav-link:hover {
               background-color: #218838;
               text-decoration: none;
-          }
-  
-          #sidebarOverlay {
-              display: none;
-              position: fixed;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background-color: rgba(21, 87, 36, 0.7);
-              z-index: 1045;
-              transition: all 0.3s ease;
-          }
-  
-          #sidebarOverlay.active {
-              display: block;
           }
   
           #topbar {
@@ -452,13 +436,42 @@
               font-weight: 600;
           }
   
-          body {
-              margin-top: 70px;
+          /* Remove the sidebar on smaller screens */
+          @media (max-width: 991px) {
+              #sidebar {
+                  display: none !important;  /* Completely remove the sidebar */
+              }
+  
+              #topbar .navbar-toggler {
+                  display: block;  /* Ensure the hamburger menu icon is visible */
+              }
+  
+              /* Adjust body margin when sidebar is removed */
+              body {
+                  margin-left: 0 !important;  /* No extra space for sidebar */
+              }
+  
+              /* Make sure content takes full width on mobile */
+              #content {
+                  width: 100% !important;
+              }
           }
+  
+          /* Optional: Reset the margin-left for very small screens (below 768px) */
+          @media (max-width: 768px) {
+              body {
+                  margin-left: 0 !important; /* Ensure no extra space */
+              }
+  
+              #content {
+                  width: 100% !important; /* Ensure the content takes full width */
+              }
+          }
+  
       </style>
   </head>
   <body>
-      <!-- Topbar -->
+      <!-- Topbar (Only visible on mobile) -->
       <nav id="topbar" class="navbar">
           <button class="navbar-toggler" id="sidebarToggle">
               <i class="fas fa-bars"></i> <!-- Font Awesome Hamburger Icon -->
@@ -466,48 +479,62 @@
           <a class="navbar-brand" href="#">Gatepass System</a>
       </nav>
   
-      <!-- Sidebar -->
+      <!-- Sidebar (Visible only on desktop) -->
       <div id="sidebar">
           <div class="logo">
               <img src="{% static 'img/pitLOGO.png' %}" alt="Logo">
           </div>
           <nav class="nav flex-column">
-              <a href="{% url 'stud-dash' %}" class="nav-link">
+              <a href="{% url 'stud-dash' %}" class="nav-link {% if request.resolver_match.url_name == 'stud-dash' %}active{% endif %}">
                   <i class="fas fa-home me-2"></i><span>Dashboard</span>
               </a>
-              <a href="{% url 'own-logs' %}" class="nav-link">
+              <a href="{% url 'own-logs' %}" class="nav-link {% if request.resolver_match.url_name == 'own-logs' %}active{% endif %}">
                   <i class="fas fa-user me-2"></i><span>Your Logs</span>
               </a>
-              <a href="{% url 'create-report' %}" class="nav-link">
+              <a href="{% url 'create-report' %}" class="nav-link {% if request.resolver_match.url_name == 'create-report' %}active{% endif %}">
                   <i class="fas fa-cogs me-2"></i><span>Create Report</span>
               </a>
-              <a href="{% url 'stud-logout' %}" class="nav-link">
+              <a href="{% url 'stud-logout' %}" class="nav-link {% if request.resolver_match.url_name == 'stud-logout' %}active{% endif %}">
                   <i class="fas fa-sign-out-alt me-2"></i><span>Logout</span>
               </a>
           </nav>
       </div>
   
-      <!-- Sidebar Overlay -->
-      <div id="sidebarOverlay"></div>
+      <!-- Main Content -->
+      <div id="content" class="container">
+          <br><br>
+      </div>
   
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
       <script>
-          const sidebar = document.getElementById('sidebar');
-          const overlay = document.getElementById('sidebarOverlay');
-          const toggleButton = document.getElementById('sidebarToggle');
+          if (!window.sidebarInitialized) {
+              const sidebar = document.getElementById('sidebar');
+              const toggleButton = document.getElementById('sidebarToggle');
+              const body = document.body;
   
-          toggleButton.addEventListener('click', () => {
-              sidebar.classList.toggle('active');
-              overlay.classList.toggle('active');
-          });
+              // Restore sidebar state from localStorage
+              const sidebarActive = localStorage.getItem('sidebarActive') === 'true';
   
-          overlay.addEventListener('click', () => {
-              sidebar.classList.remove('active');
-              overlay.classList.remove('active');
-          });
+              // Apply the restored state
+              if (sidebarActive) {
+                  sidebar.classList.add('active');
+                  body.style.marginLeft = '250px';
+              }
+  
+              // Toggle sidebar visibility and save state
+              toggleButton.addEventListener('click', () => {
+                  const isActive = sidebar.classList.toggle('active');
+                  body.style.marginLeft = isActive ? '250px' : '0';
+                  localStorage.setItem('sidebarActive', isActive);
+              });
+  
+              // Mark the script as initialized to avoid re-execution
+              window.sidebarInitialized = true;
+          }
       </script>
   </body>
   </html>
+  
   
 {% elif request.session.user_type == 'head_of_security' %}
 <!DOCTYPE html>

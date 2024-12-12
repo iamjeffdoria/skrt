@@ -78,7 +78,7 @@
   <div class="greeting-container">
     <img src="{% static 'img/laptop-greet.jpg' %}" alt="Cartoon Man">
     <div class="greeting-text">
-        Hello, <span>{{ student_name }}</span>!
+        Hello, <span id="student-name">{{ student_name }}</span>!
     </div>
   </div>
 
@@ -91,8 +91,11 @@
 <!-- Script to Update Greeting -->
 <script>
   document.addEventListener("DOMContentLoaded", function() {
-    const studentName = 'John Doe'; // You would fetch this dynamically
-    document.getElementById('student-name').textContent = studentName;
+    const studentName = 'John Doe'; // Replace with dynamic data if needed
+    const studentNameElement = document.getElementById('student-name');
+    if (studentNameElement) {
+      studentNameElement.textContent = studentName;
+    }
   });
 </script>
 
@@ -124,6 +127,4 @@
 
 </body>
 </html>
-
-
 {% endblock %}

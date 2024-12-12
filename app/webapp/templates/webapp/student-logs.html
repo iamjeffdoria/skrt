@@ -2,34 +2,49 @@
 {% load static %}
 
 {% block content %}
-<!-- Student Profile Section -->
+<head>
+    <style>
+        /* Profile container with 3D effect */
+        .profile-container {
+            background: linear-gradient(145deg, #f3f3f3, #e2e2e2); /* Subtle gradient */
+            box-shadow: 8px 8px 15px #b3b3b3, -8px -8px 15px #ffffff; /* 3D shadow */
+            border: 1px solid rgba(0, 0, 0, 0.1); /* Thin border for depth */
+            padding: 1.5rem;
+            transition: all 0.3s ease-in-out; /* Smooth hover effect */
+        }
+    
+        .profile-container:hover {
+            transform: translateY(-5px); /* Slight hover lift */
+            box-shadow: 10px 10px 20px #a1a1a1, -10px -10px 20px #ffffff;
+        }
+    </style>
+</head>
 <!-- Student Profile Section -->
 <h3 class="mb-3" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50;">Student Logs</h3>
-<div class="d-flex justify-content-between align-items-center bg-light p-4 rounded shadow-sm mb-4" style="background-color: #e9ecef; border: 1px solid #dfe4ea;">
+<div class="profile-container d-flex justify-content-between align-items-center p-4 rounded shadow mb-4" style="border-radius: 15px;">
 
     <!-- Profile Section -->
-    <div class="d-flex" style="max-width: 600px;">
+    <div class="d-flex align-items-center" style="max-width: 600px;">
         <!-- Profile Picture -->
         <div class="me-4">
             {% if student.picture %}
-                <img src="{{ student.picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #007bff;">
+                <img src="{{ student.picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle border border-primary" style="width: 120px; height: 120px; object-fit: cover;">
             {% else %}
-                <img src="{% static 'images/default-profile.png' %}" alt="Default Profile Picture" class="img-fluid rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #007bff;">
+                <img src="{% static 'images/default-profile.png' %}" alt="Default Profile Picture" class="img-fluid rounded-circle border border-primary" style="width: 120px; height: 120px; object-fit: cover;">
             {% endif %}
         </div>
         <!-- Student Information -->
         <div>
-            <h4 class="mb-2 text-dark" style="font-weight: bold; font-size: 1.4rem;">{{ student.first_name }} {{ student.last_name }}</h4>
-            <p class="mb-2 text-primary fw-semibold" style="font-size: 1.1rem;">{{ student.major }}</p>
-            <p class="mb-2 text-muted" style="font-size: 1rem;">ID: {{ student.student_id }}</p>
-            <p class="mb-0 text-secondary" style="font-size: 1rem;">Email: {{ student.email|default:"Not Provided" }}</p>
+            <h4 class="mb-1 text-dark fw-bold" style="font-size: 1.5rem;">{{ student.first_name }} {{ student.last_name }}</h4>
+            <p class="mb-2 text-primary fw-semibold" style="font-size: 1.2rem;">{{ student.major }}</p>
+            <p class="mb-2 text-muted" style="font-size: 1rem;">ID: <span class="fw-light">{{ student.student_id }}</span></p>
+            <p class="mb-0 text-secondary" style="font-size: 1rem;">Email: <span class="fw-light">{{ student.email|default:"Not Provided" }}</span></p>
         </div>
     </div>
 
-    <div class="chart-container" style="height: 200px; width: 50%;">
+    <div class="chart-container" style="height: 260px; width: 50%;">
         <canvas id="studentPerformanceChart"></canvas>
     </div>
-    
 </div>
 
 <div class="d-flex align-items-center gap-3 mb-3">
@@ -63,7 +78,7 @@
                 <th>Date In</th>
                 <th>Date Out</th>
                 <th>Time</th>
-                <th>Note</th>
+              
             </tr>
         </thead>
         <tbody>
@@ -73,7 +88,7 @@
                 <td>{{ log.formatted_date_in }}</td>
                 <td>{{ log.formatted_date_out }}</td>
                 <td>{% if log.time %}{{ log.time|date:"h:i A" }}{% else %}Not Available{% endif %}</td>
-                <td>{{ log.note|default:"No Note" }}</td>
+                
             </tr>
             {% endfor %}
         </tbody>
@@ -88,82 +103,56 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('studentPerformanceChart').getContext('2d');
-const studentPerformanceChart = new Chart(ctx, {
+       var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+    function updateChart(response) {
+            // Parse the chart data
+            const chartLabels = JSON.parse(response.chart_labels);
+            const loginCounts = JSON.parse(response.login_counts);
+            const logoutCounts = JSON.parse(response.logout_counts);
+
+            // Create a new Chart.js chart
+            const ctx = document.getElementById('studentPerformanceChart').getContext('2d');
+            new Chart(ctx, {
     type: 'bar',
     data: {
-        labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], // Days of the week
-        datasets: [
-            {
-                label: 'Logins',
-                data: [20, 35, 50, 45, 30, 40, 25], // Example login data
-                backgroundColor: 'rgba(54, 162, 235, 0.8)', // Vibrant blue
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 2
-            },
-            {
-                label: 'Logouts',
-                data: [18, 30, 45, 40, 28, 35, 22], // Example logout data
-                backgroundColor: 'rgba(255, 99, 132, 0.8)', // Strong pink
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 2
-            }
-        ]
+        labels: chartLabels,
+        datasets: [{
+            label: 'Logins',
+            data: loginCounts,
+            backgroundColor: 'rgba(0, 123, 255, 0.6)', // Blue color for logins
+            borderColor: 'rgba(0, 123, 255, 1)',
+            borderWidth: 4 // Increased border width for a thicker blue
+        }, {
+            label: 'Logouts',
+            data: logoutCounts,
+            backgroundColor: 'rgba(220, 53, 69, 0.6)', // Red color for logouts
+            borderColor: 'rgba(220, 53, 69, 1)',
+            borderWidth: 4 // Increased border width for a thicker red
+        }]
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
         scales: {
             y: {
-                beginAtZero: true,
-                grid: {
-                    color: 'rgba(200, 200, 200, 0.5)', // Light gray grid lines
-                },
-                ticks: {
-                    color: '#333', // Dark tick labels
-                    font: {
-                        size: 14
-                    }
-                }
-            },
-            x: {
-                ticks: {
-                    color: '#333', // Dark tick labels
-                    font: {
-                        size: 14
-                    }
-                },
-                grid: {
-                    color: 'rgba(200, 200, 200, 0.5)', // Light gray grid lines
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top',
-                labels: {
-                    color: '#333', // Dark legend text
-                    font: {
-                        size: 14
-                    }
-                }
-            },
-            tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark tooltip background
-                titleFont: {
-                    size: 14,
-                    weight: 'bold',
-                },
-                bodyFont: {
-                    size: 12
-                },
-                borderColor: 'rgba(255, 255, 255, 0.5)',
-                borderWidth: 1
+                beginAtZero: true
             }
         }
     }
 });
+
+        }
+
+        // Initial chart update with the data provided in the page
+        const initialData = {
+            chart_labels: '{{ chart_labels|escapejs }}',
+            login_counts: '{{ login_counts|escapejs }}',
+            logout_counts: '{{ logout_counts|escapejs }}'
+        };
+
+        updateChart(initialData);
 
 
     $(document).ready(function () {
@@ -191,7 +180,7 @@ const studentPerformanceChart = new Chart(ctx, {
                             log.date_in,
                             log.date_out,
                             log.time,
-                            log.note
+                           
                         ]);
                     });
 

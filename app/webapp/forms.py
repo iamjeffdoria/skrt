@@ -30,12 +30,7 @@ class CreateAdminForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         # Define icon HTML here
         icons = {
-            'first_name': '<i class="fa fa-user"></i> ',
-            'last_name': '<i class="fa fa-user"></i> ',
-            'username': '<i class="fa fa-user"></i> ',
-            'email': '<i class="fa fa-envelope"></i> ',
-            'password1': '<i class="fa fa-lock"></i> ',
-            'password2': '<i class="fa fa-lock"></i> ',
+          
         }
         for field_name, field in self.fields.items():
             if field_name in icons:

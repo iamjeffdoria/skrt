@@ -1,7 +1,7 @@
 {% extends "webapp/base.html" %}
 
 {% block content %}
-<div class="container mt-2">
+
     <!-- Filter Form -->
     <form id="filterForm" method="get" action="{% url 'all-logs' %}" class="shadow-sm p-3 bg-light rounded-3 mb-4 border border-2">
         <div class="row g-3">
@@ -70,9 +70,30 @@
         </div>
         
     </form>
-    <a href="{% url 'download-logs-pdf' %}?log_type={{ request.GET.log_type }}&date={{ request.GET.date }}&course={{ request.GET.course }}&major={{ request.GET.major }}&time_frame={{ request.GET.time_frame }}" class="btn btn-primary">
-        <ion-icon name="download-outline"></ion-icon> Download PDF
-    </a>
+    <hr>
+    <div class="container mt-2">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-9">
+                <div class="card shadow-sm rounded p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Total Logins:</strong> {{ total_login }}
+                        </div>
+                        <div>
+                            <strong>Total Logouts:</strong> {{ total_logout }}
+                        </div>
+                        <a href="{% url 'download-logs-pdf' %}?log_type={{ request.GET.log_type }}&date={{ request.GET.date }}&course={{ request.GET.course }}&major={{ request.GET.major }}&time_frame={{ request.GET.time_frame }}"
+                            class="btn btn-primary ms-3">
+                            <ion-icon name="download-outline"></ion-icon> Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
     <hr>
     <!-- Table -->
     <div class="table-responsive bg-white shadow-sm rounded-3 border border-2 p-3">

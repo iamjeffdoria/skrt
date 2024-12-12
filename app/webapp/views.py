@@ -30,7 +30,7 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 import cv2
-from pyzbar.pyzbar import decode
+
 import numpy as np
 from io import BytesIO
 from django.http import HttpResponse
@@ -560,6 +560,51 @@ def view_student_logs(request, student_id):
     logs = AttendanceLog.objects.filter(student=student).order_by('-time')
     print(student.first_name)
 
+    chart_data = {i: {'logins': 0, 'logouts': 0} for i in range(7)}  # 7 for Monday to Sunday
+
+    # Get login counts grouped by date_in (login date)
+    login_data = logs.filter(type='login').values('date_in').annotate(count=Count('id'))
+
+    # Get logout counts grouped by date_out (logout date)
+    logout_data = logs.filter(type='logout').values('date_out').annotate(count=Count('id'))
+
+    print("Login data:")
+    for log in login_data:
+        print(log)  # Print the login data
+
+    print("Logout data:")
+    for log in logout_data:
+        print(log)  # Print the logout data
+    
+     # Accumulate login counts by day of the week
+    for log in login_data:
+        date_in = log['date_in']
+        if date_in:
+            day_of_week = date_in.weekday()  # Monday = 0, Sunday = 6
+            chart_data[day_of_week]['logins'] += log['count']  # Accumulate the login count for each day
+
+    # Accumulate logout counts by day of the week
+    for log in logout_data:
+        date_out = log['date_out']
+        if date_out:
+            day_of_week = date_out.weekday()  # Monday = 0, Sunday = 6
+            chart_data[day_of_week]['logouts'] += log['count']  # Accumulate the logout count for each day
+
+
+    # Prepare chart data labels and counts
+    chart_labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    login_counts = [chart_data[i]['logins'] for i in range(7)]
+    logout_counts = [chart_data[i]['logouts'] for i in range(7)]
+
+    # Serialize the data for AJAX response
+    serialized_chart_labels = json.dumps(chart_labels)
+    serialized_login_counts = json.dumps(login_counts)
+    serialized_logout_counts = json.dumps(logout_counts)
+
+
+    print("Serialized Chart Labels:", serialized_chart_labels)
+    print("Serialized Login Counts:", serialized_login_counts)
+    print("Serialized Logout Counts:", serialized_logout_counts)
         # Handle AJAX request for filtering
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'GET':
         time_frame = request.GET.get('time_frame')
@@ -568,23 +613,20 @@ def view_student_logs(request, student_id):
 
         if time_frame == "today":
             start_date = now().date()
-            logs = logs.filter(date_in=start_date)
+            logs = logs.filter(date_in=start_date) | logs.filter(date_out=start_date)
         elif time_frame == "week":
             start_date = now() - timedelta(days=now().weekday())
-            logs = logs.filter(date_in__gte=start_date)
+            logs = logs.filter(date_in__gte=start_date) | logs.filter(date_out__gte=start_date)
         elif time_frame == "month":
             start_date = now().replace(day=1)
-            logs = logs.filter(date_in__gte=start_date)
-        
+            logs = logs.filter(date_in__gte=start_date) | logs.filter(date_out__gte=start_date)
+
         # Filter by start and end date if provided
         if start_date:
-            logs = logs.filter(date_in__gte=start_date)
+            logs = logs.filter(date_in__gte=start_date) | logs.filter(date_out__gte=start_date)
         if end_date:
-            logs = logs.filter(date_in__lte=end_date)
+            logs = logs.filter(date_in__lte=end_date) | logs.filter(date_out__lte=end_date)
         
-        
-
-       
         # Format the response while handling None values
         return JsonResponse({
             'logs': [
@@ -597,7 +639,9 @@ def view_student_logs(request, student_id):
                 }
                 for log in logs
             ],
-              
+            'chart_labels': serialized_chart_labels,
+            'login_counts': serialized_login_counts,
+            'logout_counts': serialized_logout_counts,
         })
     # Prepare context for rendering
     for log in logs:
@@ -606,7 +650,10 @@ def view_student_logs(request, student_id):
 
     context = {
         'student': student,
-        'logs': logs
+        'logs': logs,
+        'login_counts': serialized_login_counts,
+        'logout_counts': serialized_logout_counts,
+        'chart_labels': serialized_chart_labels,
         
     }
     return render(request, 'webapp/student-logs.html', context)
@@ -1393,6 +1440,10 @@ def all_logs(request):
 
     # Retrieve all logs based on filters
     all_logs = AttendanceLog.objects.filter(filters)
+    total_login = all_logs.filter(type='login').count()
+    total_logout = all_logs.filter(type='logout').count()
+    print(total_login)
+    print(total_logout)
 
     # Course choices for the dropdown
     course_choices = [
@@ -1437,6 +1488,8 @@ def all_logs(request):
         'logs': all_logs,
         'course_choices': course_choices,
         'major_choices': major_choices,
+        'total_login': total_login,
+        'total_logout': total_logout,
     })
 
 def student_details(request, student_id):

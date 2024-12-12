@@ -144,6 +144,19 @@ class studRec(models.Model):
                 img.save(self.picture.path)
 
 
+class AttendanceLog(models.Model):
+    student = models.ForeignKey(studRec, on_delete=models.CASCADE)  # Link to studRec
+    student_reference_id = models.CharField(max_length=20)  # Unique identifier based on student_id from studRec
+    type = models.CharField(max_length=10, choices=[('login', 'Login'), ('logout', 'Logout')])  # Type of entry
+    time = models.DateTimeField(default=timezone.now)  # Timestamp for the record
+    date_in = models.DateField(blank=True, null=True)  # Date of login
+    date_out = models.DateField(blank=True, null=True)  # Date of logout
+    note = models.CharField(max_length=255, blank=True, null=True)  # Additional notes
+
+    def __str__(self):
+        return f"{self.student} - {self.type} at {self.time}"
+
+
 class PendingRequests(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     student_id = models.CharField(max_length=20)
@@ -178,17 +191,7 @@ class PendingRequests(models.Model):
                 img.save(self.picture.path)
 
 
-class AttendanceLog(models.Model):
-    student = models.ForeignKey(studRec, on_delete=models.CASCADE)  # Link to studRec
-    student_reference_id = models.CharField(max_length=20)  # Unique identifier based on student_id from studRec
-    type = models.CharField(max_length=10, choices=[('login', 'Login'), ('logout', 'Logout')])  # Type of entry
-    time = models.DateTimeField(default=timezone.now)  # Timestamp for the record
-    date_in = models.DateField(blank=True, null=True)  # Date of login
-    date_out = models.DateField(blank=True, null=True)  # Date of logout
-    note = models.CharField(max_length=255, blank=True, null=True)  # Additional notes
 
-    def __str__(self):
-        return f"{self.student} - {self.type} at {self.time}"
     
 class Report(models.Model):
     student_id = models.CharField(max_length=20)
