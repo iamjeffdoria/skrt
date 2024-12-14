@@ -100,7 +100,7 @@ MAJOR_CHOICES = [
     ('Electrical', 'Electrical'),
     ('Electronics', 'Electronics'),
     ('Fashion and Apparel', 'Fashion and Apparel'),
-    ('Food and Beverages Preparation Service Management', 'Food and Beverages Preparation Service Management'),
+    ('Food and Beverages', 'Food and Beverages'),
     ('Mechanical', 'Mechanical'),
     ('Powerplant', 'Powerplant'),
     ('Welding and Fabrication', 'Welding and Fabrication'),

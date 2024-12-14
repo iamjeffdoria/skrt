@@ -15,6 +15,8 @@ from django.contrib import messages
 from django.db.models import Q
 from django.urls import reverse
 import csv
+from reportlab.platypus import Table, TableStyle, Image, Paragraph
+from reportlab.lib import colors
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import studRec, AttendanceLog
@@ -30,6 +32,7 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 import cv2
+from reportlab.platypus import Paragraph
 
 import numpy as np
 from io import BytesIO
@@ -55,7 +58,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle,Image, Space
 from reportlab.lib.units import inch
 import os
 from django.templatetags.static import static
-
+from reportlab.lib.styles import getSampleStyleSheet
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.utils import timezone
@@ -66,6 +69,9 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.db.models import Q
 import os
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.styles import ParagraphStyle
+
 
 def student_list(request):
       # Only allow access to head of security and OSDS users
@@ -148,30 +154,78 @@ def download_logs_pdf(request):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="logs.pdf"'
 
-    # Set up PDF document
-    doc = SimpleDocTemplate(response, pagesize=letter)
+    # Set up PDF document with reduced top margin
+    doc = SimpleDocTemplate(
+        response, 
+        pagesize=letter, 
+        topMargin=10,  # Adjust this value to reduce the top margin
+        bottomMargin=20,  # You can adjust this as well if needed
+        leftMargin=20,  # Adjust left margin if needed
+        rightMargin=20,  # Adjust right margin if needed
+    )
 
-    # Header with institutional details
+   
+    centered_style = ParagraphStyle(
+        name="Centered",
+        parent=getSampleStyleSheet()["Normal"],
+        alignment=TA_CENTER,  # Center-align text
+    )
+
+    centered_style_bold = ParagraphStyle(
+        name="CenteredBold",
+        parent=getSampleStyleSheet()["Heading4"],
+        alignment=TA_CENTER,  # Center-align text
+    )
+
+    right_style = ParagraphStyle(
+        name="RightAligned",
+        parent=getSampleStyleSheet()["Normal"],
+        alignment=TA_RIGHT,  # Right-align text
+    )
+
+    left_style = ParagraphStyle(
+        name="LeftAligned",
+        parent=getSampleStyleSheet()["Normal"],
+        alignment=TA_LEFT,  # Left-align text for field names
+        fontName="Helvetica",  # Regular font (not bold)
+    )
+
+    # Define the header table data with more rows for the right section
     header_data = [
         [
-            Image(logo_left_path, width=50, height=50),
-            "Republic of the Philippines\nPalompon Institute of Technology\nPalompon, Leyte\nCOLLEGE OF TECHNOLOGY AND ENGINEERING",
-            Image(logo_right_path, width=50, height=50)
-        ],
+            # Left cell: Two logos in a square cell
+            [
+                Image(logo_left_path, width=50, height=50),
+                Image(logo_right_path, width=50, height=50),
+            ],
+            # Center cell: Institution details
+            [
+                Paragraph("<b>Republic of the Philippines</b>", centered_style),
+                Paragraph("Palompon Institute of Technology", centered_style),
+                Paragraph("<b>Palompon, Leyte</b>", centered_style),
+                Paragraph("<b>COLLEGE OF TECHNOLOGY AND ENGINEERING</b>", centered_style_bold),
+            ],
+            # Right cell: Date and other fields (vertically aligned with enough space)
+            [
+                Paragraph("Date:__________________", left_style),
+                Paragraph("Others:________________", left_style),  # Non-bold text
+                Paragraph("Additional:______________", left_style),  # Non-bold text
+                Paragraph("Another:_______________", left_style),  # Non-bold text
+            ],
+        ]
     ]
 
-    # Styling for header table with added line spacing and adjustments
-    header_table = Table(header_data, colWidths=[None, 350, None])
+    # Define the header table with adjusted column widths and row heights
+    header_table = Table(header_data, colWidths=[100, 350, 150])  # Adjust column widths as needed
     header_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TEXTCOLOR', (1, 0), (1, 0), colors.black),
-        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-        ('FONTNAME', (1, 0), (1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (1, 0), (1, 0), 12),  # Slightly reduce font size for better spacing
-        ('LEADING', (1, 0), (1, 0), 14),   # Increase line spacing for readability
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),  # Additional padding for the header
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # Center vertically in all columns
+        ('ALIGN', (0, 0), (0, 0), 'CENTER'),  # Center the left logos horizontally
+        ('ALIGN', (1, 0), (1, 0), 'CENTER'),  # Center the text horizontally in the center column
+        ('ALIGN', (2, 0), (2, 0), 'CENTER'),  # Center the right column (horizontally)
+        ('VALIGN', (2, 0), (2, -1), 'TOP'),  # Align top of right column
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),  # Add border around the table
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.black),  # Add inner gridlines
     ]))
-
     # Table data for logs
     table_data = [['Student Name', 'Course', 'Major', 'Log Type', 'Time']]
     for log in filtered_logs:
@@ -986,7 +1040,7 @@ def delete_record(request, pk):
         record = get_object_or_404(studRec, id=pk)
         record.delete()
         messages.success(request, "Record Deleted.")
-        return JsonResponse({'status': 'success', 'message': 'Record deleted', 'redirect_url': reverse('dashboard')})
+        return JsonResponse({'status': 'success', 'message': 'Record deleted', 'redirect_url': reverse('student-list')})
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
@@ -1476,7 +1530,7 @@ def all_logs(request):
         ('Electrical', 'Electrical'),
         ('Electronics', 'Electronics'),
         ('Fashion and Apparel', 'Fashion and Apparel'),
-        ('Food and Beverages Preparation Service Management', 'Food and Beverages Preparation Service Management'),
+        ('Food and Beverages ', 'Food and Beverages'),
         ('Mechanical', 'Mechanical'),
         ('Powerplant', 'Powerplant'),
         ('Welding and Fabrication', 'Welding and Fabrication'),
