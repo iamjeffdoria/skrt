@@ -163,8 +163,8 @@ def download_logs_pdf(request):
         leftMargin=20,  # Adjust left margin if needed
         rightMargin=20,  # Adjust right margin if needed
     )
-
-   
+        
+    # Define the styles
     centered_style = ParagraphStyle(
         name="Centered",
         parent=getSampleStyleSheet()["Normal"],
@@ -190,14 +190,32 @@ def download_logs_pdf(request):
         fontName="Helvetica",  # Regular font (not bold)
     )
 
+    # Update the styles to include slight spacing after each paragraph
+    right_column_style = ParagraphStyle(
+        name="RightColumnStyle",
+        parent=left_style,
+        spaceAfter=4  # Minimal spacing between lines
+    )
+
+    # Updated right cell: Date and other fields with subtle spacing
+    right_column_content = [
+        Paragraph("Date:_____________", right_column_style),
+        Paragraph("Others:____________", right_column_style),
+        Paragraph("Additional:_________", right_column_style),
+        Paragraph("Another:___________", right_column_style),
+    ]
+
     # Define the header table data with more rows for the right section
     header_data = [
         [
-            # Left cell: Two logos in a square cell
-            [
-                Image(logo_left_path, width=50, height=50),
-                Image(logo_right_path, width=50, height=50),
-            ],
+            # Left cell: Use a Table to horizontally align logos
+            Table([
+                [
+                    Image(logo_left_path, width=50, height=50),
+                    Image(logo_right_path, width=50, height=50),
+                ]
+            ], colWidths=[60, 60]),  # Reduce the column width for the logos, but keep them equal
+
             # Center cell: Institution details
             [
                 Paragraph("<b>Republic of the Philippines</b>", centered_style),
@@ -205,18 +223,14 @@ def download_logs_pdf(request):
                 Paragraph("<b>Palompon, Leyte</b>", centered_style),
                 Paragraph("<b>COLLEGE OF TECHNOLOGY AND ENGINEERING</b>", centered_style_bold),
             ],
-            # Right cell: Date and other fields (vertically aligned with enough space)
-            [
-                Paragraph("Date:__________________", left_style),
-                Paragraph("Others:________________", left_style),  # Non-bold text
-                Paragraph("Additional:______________", left_style),  # Non-bold text
-                Paragraph("Another:_______________", left_style),  # Non-bold text
-            ],
+
+            # Right cell with updated spacing
+            right_column_content,
         ]
     ]
 
     # Define the header table with adjusted column widths and row heights
-    header_table = Table(header_data, colWidths=[100, 350, 150])  # Adjust column widths as needed
+    header_table = Table(header_data, colWidths=[120, 350, 120])  # Adjust the overall width, keeping left and right columns equal
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # Center vertically in all columns
         ('ALIGN', (0, 0), (0, 0), 'CENTER'),  # Center the left logos horizontally
@@ -225,8 +239,15 @@ def download_logs_pdf(request):
         ('VALIGN', (2, 0), (2, -1), 'TOP'),  # Align top of right column
         ('BOX', (0, 0), (-1, -1), 1, colors.black),  # Add border around the table
         ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.black),  # Add inner gridlines
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Add padding to the left of cells
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),  # Add padding to the right of cells
+        ('TOPPADDING', (0, 0), (-1, -1), 10),  # Add padding to the top of cells
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),  # Add padding to the bottom of cells
     ]))
+
+
     # Table data for logs
+
     table_data = [['Student Name', 'Course', 'Major', 'Log Type', 'Time']]
     for log in filtered_logs:
         row = [
