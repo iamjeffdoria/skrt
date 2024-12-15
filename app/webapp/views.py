@@ -53,7 +53,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle,Image, Spacer, Frame
 from reportlab.lib.units import inch
 import os
@@ -114,10 +114,13 @@ def download_logs_pdf(request):
     # Retrieve filters from the request
     log_type = request.GET.get('log_type', '')
     date = request.GET.get('date', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
     course = request.GET.get('course', '')
     major = request.GET.get('major', '')
     time_frame = request.GET.get('time_frame', '')
 
+    table = None
     # Apply filters for log entries
     filters = Q()
     if log_type:
@@ -128,12 +131,31 @@ def download_logs_pdf(request):
             filters &= Q(time__date=date_obj)
         except ValueError:
             pass
+    if start_date and end_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            filters &= Q(time__date__range=[start_date_obj, end_date_obj])
+        except ValueError:
+            pass
+    elif start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            filters &= Q(time__date__gte=start_date_obj)
+        except ValueError:
+            pass
+    elif end_date:
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            filters &= Q(time__date__lte=end_date_obj)
+        except ValueError:
+            pass
     if course:
         filters &= Q(student__course=course)
     if major:
         filters &= Q(student__major=major)
 
-    # Time frame filters
+        # Time frame filters
     today = timezone.now().date()
     if time_frame == 'today':
         filters &= Q(time__date=today)
@@ -145,6 +167,11 @@ def download_logs_pdf(request):
 
     # Retrieve logs based on filters
     filtered_logs = AttendanceLog.objects.filter(filters)
+
+    # Calculate totals
+    total_login = filtered_logs.filter(type='login').count()
+    total_logout = filtered_logs.filter(type='logout').count()
+
 
     # Paths to logo images
     logo_left_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'pitLOGO.png')
@@ -205,74 +232,145 @@ def download_logs_pdf(request):
         Paragraph("Another:___________", right_column_style),
     ]
 
-    # Define the header table data with more rows for the right section
     header_data = [
+        # First row
         [
-            # Left cell: Use a Table to horizontally align logos
+            # Left cell: Logos (spanning the first row)
             Table([
                 [
                     Image(logo_left_path, width=50, height=50),
                     Image(logo_right_path, width=50, height=50),
                 ]
-            ], colWidths=[60, 60]),  # Reduce the column width for the logos, but keep them equal
+            ], colWidths=[60, 60]),
 
-            # Center cell: Institution details
+            # Center cell: First row content (spanning the first row)
             [
                 Paragraph("<b>Republic of the Philippines</b>", centered_style),
                 Paragraph("Palompon Institute of Technology", centered_style),
                 Paragraph("<b>Palompon, Leyte</b>", centered_style),
-                Paragraph("<b>COLLEGE OF TECHNOLOGY AND ENGINEERING</b>", centered_style_bold),
             ],
 
-            # Right cell with updated spacing
+            # Right cell: Placeholder content (spanning the first row)
             right_column_content,
+        ],
+        # Second row
+        [
+            "1",  # Empty cell in the first column
+             Paragraph("<b>COLLEGE OF TECHNOLOGY AND ENGINEERING</b>", centered_style_bold),  # Content in the second column
+            "3",  # Empty cell in the third column
         ]
     ]
 
-    # Define the header table with adjusted column widths and row heights
-    header_table = Table(header_data, colWidths=[120, 350, 120])  # Adjust the overall width, keeping left and right columns equal
+    # Define the header table with adjusted column widths
+    header_table = Table(header_data, colWidths=[120, 350, 120])  # Adjust widths as needed
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # Center vertically in all columns
-        ('ALIGN', (0, 0), (0, 0), 'CENTER'),  # Center the left logos horizontally
-        ('ALIGN', (1, 0), (1, 0), 'CENTER'),  # Center the text horizontally in the center column
-        ('ALIGN', (2, 0), (2, 0), 'CENTER'),  # Center the right column (horizontally)
-        ('VALIGN', (2, 0), (2, -1), 'TOP'),  # Align top of right column
-        ('BOX', (0, 0), (-1, -1), 1, colors.black),  # Add border around the table
-        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.black),  # Add inner gridlines
-        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Add padding to the left of cells
-        ('RIGHTPADDING', (0, 0), (-1, -1), 10),  # Add padding to the right of cells
-        ('TOPPADDING', (0, 0), (-1, -1), 10),  # Add padding to the top of cells
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),  # Add padding to the bottom of cells
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Center align horizontally
+        ('SPAN', (0, 0), (0, 1)),  # Span the first column across both rows
+        ('SPAN', (2, 0), (2, 1)),  # Span the third column across both rows
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),  # Border around the table
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.black),  # Inner gridlines
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Add left padding
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),  # Add right padding
+        ('TOPPADDING', (0, 0), (-1, -1), 10),  # Add top padding
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),  # Add bottom padding
     ]))
 
 
-    # Table data for logs
 
-    table_data = [['Student Name', 'Course', 'Major', 'Log Type', 'Time']]
+    paragraph = Paragraph("This PDF document provides a comprehensive overview of the filtered attendance logs, offering valuable insights into student activity within the specified timeframe.", centered_style)
+
+    description = "Attendance logs filtered by "
+    filters_list = []
+
+    if log_type:
+        filters_list.append(f"log type: <strong>{log_type}</strong>")
+    if date:
+        filters_list.append(f"date: <strong>{date}</strong>")
+    if start_date and end_date:
+        filters_list.append(f"date range: <strong>{start_date} to {end_date}</strong>")
+    elif start_date:
+        filters_list.append(f"start date: <strong>{start_date}</strong>")
+    elif end_date:
+        filters_list.append(f"end date: <strong>{end_date}</strong>")
+    if course:
+        filters_list.append(f"course: <strong>{course}</strong>")
+    if major:
+        filters_list.append(f"major: <strong>{major}</strong>")
+    if time_frame:
+        filters_list.append(f"time frame: <strong>{time_frame.replace('_', ' ').title()}</strong>")
+
+    description += ", ".join(filters_list) if filters_list else "no specific filters."
+
+
+    description_paragraph = Paragraph(description, left_style)
+
+
+    totals_paragraph = Paragraph(
+        f"Total Logins: <strong>{total_login}</strong> &nbsp; &nbsp; "
+        f"Total Logouts: <strong>{total_logout}</strong>",
+        ParagraphStyle(
+            'Totals',
+            parent=getSampleStyleSheet()['Normal'],  # Inherit from 'Normal'
+            spaceAfter=5  # Keep existing spacing
+        )
+    )
+
+    # Table Data
+    table_data = [['Student Name', 'Course', 'Major', 'Log Type', 'Date and Time']]
     for log in filtered_logs:
         row = [
-            f"{log.student.first_name} {log.student.middle_name or ''} {log.student.last_name} {log.student.suffix or ''}",
+            f"{log.student.first_name} {log.student.middle_name or ''} {log.student.last_name} {log.student.suffix or ''}".strip(),
             log.student.course,
             log.student.major,
             'Login' if log.type == 'login' else 'Logout',
-            log.time.strftime("%Y-%m-%d %H:%M:%S"),
+            log.time.strftime("%b. %d, %Y, %I:%M %p")
         ]
         table_data.append(row)
 
-    # Styling the data table
-    table = Table(table_data)
+    # Adjusted column widths for better spacing
+    column_widths = [150, 70, 130, 60, 130]  # Set custom column widths
+
+    # Create the table
+    table = Table(table_data, colWidths=column_widths)
+
+    # Consistent Font Size and Styling
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        # Header Styling
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 0), (-1, 0), 8),
+
+        # Body Styling
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
+        ('TOPPADDING', (0, 1), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+
+        # Grid and Borders
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+
+        # Alternate Row Colors
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+        ('BACKGROUND', (0, 2), (-1, -1), colors.lightgrey),
     ]))
 
+    # Alternating Row Backgrounds for Readability
+    for i in range(1, len(table_data)):
+        if i % 2 == 0:
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, i), (-1, i), colors.whitesmoke),
+            ]))
+
+
     # Build PDF elements
-    elements = [header_table, Spacer(1, 20), table]
+    elements = [header_table, Spacer(1, 30), paragraph,Spacer(1, 10),
+    description_paragraph,Spacer(1, 20),totals_paragraph, Spacer(1, 20), table]
 
     # Generate PDF
     doc.build(elements)
@@ -1503,13 +1601,19 @@ def all_logs(request):
         filters &= Q(time__date__range=[start_of_week, today])
     elif time_frame == 'this_month':
         filters &= Q(time__year=today.year, time__month=today.month)
-
-     # Filter by start date and end date if both are provided
-    if start_date and end_date:
+        
+    # Filter by start date and end date if provided
+    if start_date:
         try:
             start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            filters &= Q(time__date__gte=start_date_obj)  # From start date onwards
+        except ValueError:
+            pass  # Ignore invalid date formats
+
+    if end_date:
+        try:
             end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
-            filters &= Q(time__date__range=[start_date_obj, end_date_obj])
+            filters &= Q(time__date__lte=end_date_obj)  # Up to the end date
         except ValueError:
             pass  # Ignore invalid date formats
 

@@ -18,7 +18,7 @@
             <div class="col-lg-3 col-md-6">
                 <div class="form-floating">
                     <input type="date" id="date" name="date" class="form-control custom-input" value="{{ request.GET.date }}">
-                    <label for="date"><i class="fas fa-calendar-alt me-2"></i>Date</label>
+                    <label for="date"><i class="fas fa-calendar-alt me-2"></i>Specific Date</label>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
@@ -82,10 +82,10 @@
                         <div>
                             <strong>Total Logouts:</strong> {{ total_logout }}
                         </div>
-                        <a href="{% url 'download-logs-pdf' %}?log_type={{ request.GET.log_type }}&date={{ request.GET.date }}&course={{ request.GET.course }}&major={{ request.GET.major }}&time_frame={{ request.GET.time_frame }}"
-                            class="btn btn-primary ms-3">
-                            <ion-icon name="download-outline"></ion-icon> Download PDF
-                        </a>
+                        <a href="{% url 'download-logs-pdf' %}?log_type={{ request.GET.log_type }}&date={{ request.GET.date }}&start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}&course={{ request.GET.course }}&major={{ request.GET.major }}&time_frame={{ request.GET.time_frame }}"
+    class="btn btn-primary ms-3">
+    <ion-icon name="download-outline"></ion-icon> Download PDF
+</a>
                     </div>
                 </div>
             </div>
@@ -144,8 +144,8 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 <script>
-$(document).ready(function() {
-    $('#log_type, #date, #course, #major, #time_frame, #start_date, #end_date').on('change', function() {
+    $(document).ready(function() {
+         $('#log_type, #date, #course, #major, #time_frame, #start_date, #end_date').on('change', function() {
         $('#filterForm').submit(); // Submit the form to apply filters automatically
     });
 
@@ -156,8 +156,32 @@ $(document).ready(function() {
     if ($('#logsTable tbody tr').length === 0) {
         table.clear().draw(); // Clear DataTable
     }
-});
+        // Reset other filters when one type of date filter is changed
+        $('#date').on('change', function() {
+            $('#start_date, #end_date, #time_frame').val(''); // Clear start_date, end_date, and time_frame
+            $('#filterForm').submit();
+        });
+
+        $('#start_date, #end_date').on('change', function() {
+            $('#date, #time_frame').val(''); // Clear date and time_frame
+            $('#filterForm').submit();
+        });
+
+        $('#time_frame').on('change', function() {
+            $('#date, #start_date, #end_date').val(''); // Clear date, start_date, and end_date
+            $('#filterForm').submit();
+        });
+
+        // Initialize DataTable
+        var table = $('#logsTable').DataTable();
+
+        // Reset DataTable when there are no logs
+        if ($('#logsTable tbody tr').length === 0) {
+            table.clear().draw(); // Clear DataTable
+        }
+    });
 </script>
+
 
 <!-- Custom CSS for Dropdowns and Date Input -->
 <style>
